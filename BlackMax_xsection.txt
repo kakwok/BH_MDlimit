@@ -394,4 +394,3 @@
 /afs/cern.ch/user/b/belotel/work/public/BH/BH5_BM_MD9000_MBH11000_n2/BlackMaxLHArecord.lhe	1.3015600E-11
 /afs/cern.ch/user/b/belotel/work/public/BH/BH5_BM_MD9000_MBH11000_n4/BlackMaxLHArecord.lhe	6.1581600E-11
 /afs/cern.ch/user/b/belotel/work/public/BH/BH5_BM_MD9000_MBH11000_n6/BlackMaxLHArecord.lhe	1.3854700E-10
-
