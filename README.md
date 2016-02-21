@@ -7,7 +7,12 @@
 
 # 2) Calculate Zbi
     Ingredients:
-* Theoretic cross sections: Cross QBH_xsection.txt BlackMax_xsection.txt SB_xsection.txt
-* Data FlatTuple          : "all2015C+D_NoMetCut+NewMETFilter.root"
-* FitFunction             : "fitfunctions_ex2.root"
+* Theoretic cross sections: QBH_xsection.txt BlackMax_xsection.txt SB_xsection.txt
+* Data FlatTuple          : all2015C+D_NoMetCut+NewMETFilter.root
+* FitFunction             : fitfunctions_ex2.root
 * MILimit                 : MILimit.txt
+
+   Usage: 
+```
+   python ZbiCalculator_v4.py MasspointList.txt Output.txt
+```
