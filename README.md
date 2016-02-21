@@ -5,6 +5,9 @@
     Usage: cmenv
 	   sh GenSignalFlatTuple.sh
 
-# 2) Scaling up the signal sample
-    The following are the cross-section from the generators: QBH_xsection.txt BlackMax_xsection.txt SB_xsection.txt
-
+# 2) Calculate Zbi
+    Ingredients:
+* Theoretic cross sections: Cross QBH_xsection.txt BlackMax_xsection.txt SB_xsection.txt
+* Data FlatTuple          : "all2015C+D_NoMetCut+NewMETFilter.root"
+* FitFunction             : "fitfunctions_ex2.root"
+* MILimit                 : MILimit.txt
