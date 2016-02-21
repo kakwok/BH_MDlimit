@@ -12,7 +12,6 @@
 * FitFunction             : fitfunctions_ex2.root
 * MILimit                 : MILimit.txt
 
-   Usage: 
 ```
    python ZbiCalculator_v4.py MasspointList.txt Output.txt
 ```
