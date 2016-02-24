@@ -1,7 +1,7 @@
 # This is a script to calculate the Zbi significance from the M.I. data card
 # Data card is the txt output from fitSThists.py
 # Usage        : python ZbiCalculator_v3.py Masspointlist.txt Output.txt
-# Output files : STMin_optimized.txt
+# Output files : STMin_optimized.txt STmin_optimized.root
 # Input files  : Data.root_InclusiveX.txt 
 # Martin Kwok 1/28/2016
 
@@ -28,11 +28,12 @@ def getZbi(n_on, n_off, tau):
 
 
 IntLumi =  2263.5   	# Integrated Luminosity in pb^-1
-eospath="/store/group/phys_exotica/BH_RunII/SB_Ntuple_Final/"
-#XsecDB="BlackMax_xsection.txt"
-XsecDB="SB_xsection_extra.txt"
+eospath="/store/group/phys_exotica/BH_RunII/BlackMax_NTuple/"
+#eospath="/store/group/phys_exotica/BH_RunII/SB_Ntuple_Final/"
+XsecDB="BlackMax_xsection.txt"
+#XsecDB="SB_xsection_extra.txt"
 MILimit="MILimits.txt"
-ModelClass="SB"			#or BM
+ModelClass="BM"			#or BM
 NScanMin  = 7
 NScanMax  = 10
 SaveDump = True
@@ -53,7 +54,7 @@ fitNormRanges = FitAndNormRange("FitNormRanges.txt")
 #fitNormRanges.showNormRanges()
 
 Output   = open("%s"%argv[2],"w")
-Output.write("Model  MD   MBH  n | STMin   Nmin      Zbi      Nsignal     Xsec(fb)    Acept   StLimit   xsec(fb): Obs -2sig -1sig Exp +1sig +2sig  \n")
+Output.write("Model  MD   n  MBH | STMin   Nmin      Zbi      Nsignal     Xsec(fb)    Acept   StLimit   xsec(fb): Obs -2sig -1sig Exp +1sig +2sig  \n")
 
 if SaveDump:
 	Dump = open("%s.log"%argv[2].replace(".txt",""),"w")
@@ -83,8 +84,9 @@ for line in MasspointListInput:
 	SignalOrgRoot=TFile.Open(rawFile)
 	Ngen         =SignalOrgRoot.Get("bhana").Get("t").GetEntries()
 	Masspoint    = getXsec(signal,XsecDB,ModelClass)
-	MBH     = Masspoint[1]
-	Xsec    = Masspoint[3]
+	#Masspoint =[Model  MD   MBH n  Xsec]
+	MBH     = Masspoint[2]
+	Xsec    = Masspoint[4]
 	SignalFlatRoot=TFile("./SignalFlatTuple/%s"%signal)
 	SignalDir =SignalFlatRoot.Get("ST")
 	#nST = Best ST for a particular Nmin
@@ -92,7 +94,7 @@ for line in MasspointListInput:
 	nZbi_list =[]
 	nYield_list =[]
 	nMin_list =[]
-	if (ModelClass=="SB"):
+	if (ModelClass=="SB" or ModelClass=="BM"):
 		PlotTitle = signal.strip("BlackMaxLHArecord_").strip("_FlatTuple.root")
 	ZbiBest2D.append( TH2F("%s"%PlotTitle,"%s"%PlotTitle,9,2,11,60,2000,8000))
 	#print "Processing %s"%signal
@@ -163,7 +165,7 @@ for line in MasspointListInput:
 	Acceptance = Yield / (IntLumi*Xsec)
 	MInorm     = (IntLumi/1000)*Acceptance
 	MIdata     = getMI(STopt, Nopt, MILimit)
-	Output.write("%s %.0f %.0f %i  %s %s %.3f %.6f %f  %.5f" % (ModelClass, Masspoint[0],Masspoint[1],Masspoint[2], STopt, Nopt,MaxZbi, Yield, Xsec*1000, Acceptance))
+	Output.write("%s %.0f %i %.0f %s %s %.3f %.6f %f %.5f" % (Masspoint[0], Masspoint[1],Masspoint[3],Masspoint[2], STopt, Nopt,MaxZbi, Yield, Xsec*1000, Acceptance))
 	Output.write(" %s %.3f %.3f %.3f %.3f %.3f %.3f \n"%(MIdata[0], MIdata[1]/MInorm, MIdata[2]/MInorm ,MIdata[3]/MInorm,MIdata[4]/MInorm,MIdata[5]/MInorm,MIdata[6]/MInorm))
 	PlotSTopt.SetPoint(PlotSTopt.GetN(),MBH,STopt)
 	PlotZbiOpt.SetPoint(PlotZbiOpt.GetN(),MBH,MaxZbi)
