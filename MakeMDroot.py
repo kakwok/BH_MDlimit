@@ -8,13 +8,18 @@ import array
 Input = open("%s"%argv[1])
 PlotRoot = TFile.Open("./plots/%s_plot.root"%argv[1].replace(".txt",""),"recreate")
 
+ymin = 1e-3
+ymax = 1e3
+
+#############
 Modelpoints =[]
 MD_last      ="default"
 ModelID_last =0
 n_last       =0
-Model        = Modelpoint(ModelID_last,MD_last,n_last)
 key_last     = ""
-print Model.datalist
+Model        = Modelpoint(ModelID_last,MD_last,n_last)
+
+#print Model.datalist
 next(Input)
 for line in Input:
 	line   = line.split()
@@ -69,26 +74,33 @@ OneSig_limit  =[]
 Exp_limit   =[]
 
 Modellines =[]
+Modellines_exp =[]
 iModel=0
 iModellines=0
 for M in Modelpoints:
 	ZbiOpt_grph.append( TGraph())
 	ZbiOpt_grph[iModel].SetTitle("ZbiOpt_%s"%M.key)
+	ZbiOpt_grph[iModel].SetName("ZbiOpt_%s"%M.key)
 	StOpt_grph.append( TGraph())
 	StOpt_grph[iModel].SetTitle("StOpt_%s"%M.key)
+	StOpt_grph[iModel].SetName("StOpt_%s"%M.key)
 	NOpt_grph.append( TGraph())
 	NOpt_grph[iModel].SetTitle("NOpt_%s"%M.key)
+	NOpt_grph[iModel].SetName("NOpt_%s"%M.key)
 	Xsec_grph.append( TGraph())
 	Xsec_grph[iModel].SetTitle("Xsec_%s"%M.key)
+	Xsec_grph[iModel].SetName("Xsec_%s"%M.key)
 
 	Obs_limit.append( TGraph())
 	Obs_limit[iModel].SetTitle("Observed")
+	Obs_limit[iModel].SetName("Observed_%s"%M.key)
 	TwoSig_limit.append( TGraphAsymmErrors())
 	#TwoSig_limit[iModel].SetTitle("Expected 2-#sigma")
 	OneSig_limit.append( TGraphAsymmErrors())
 	#OneSig_limit[iModel].SetTitle("Expected 1-#sigma")
 	Exp_limit.append( TGraph())
 	Exp_limit[iModel].SetTitle("Expected")
+	Exp_limit[iModel].SetName("Expected_%s"%M.key)
 
 	#         [  0,    1 ,   2 ,  3 ,   4  ,  5 ,  6  ,   7   , 8 ,  9  ,  10 , 11,  12 , 13  ]
 	#data   = [MBH, Stmin, nmin, Zbi,signal,Xsec,accpt,Stlimit,Obs,m2sig,m1sig,Exp,p1sig,p2sig]
@@ -103,28 +115,86 @@ for M in Modelpoints:
 		TwoSig_limit[iModel].SetPointError(  TwoSig_limit[iModel].GetN()-1, 0,0,  (data[11]-data[9]), (data[13]-data[11]) )
 		OneSig_limit[iModel].SetPoint(  OneSig_limit[iModel].GetN(), data[0]/1000, data[10])
 		OneSig_limit[iModel].SetPointError(  OneSig_limit[iModel].GetN()-1, 0,0,  (data[10]-data[9]), (data[12]-data[11]) )
-#	ZbiOpt_grph[iModel].Write()
 
+	NOpt_grph[iModel].Write()
+	StOpt_grph[iModel].Write()
+	ZbiOpt_grph[iModel].Write()
+	Xsec_grph[iModel].Write()
+	Obs_limit[iModel].Write()
+	Exp_limit[iModel].Write()
 	if( iModel==0 ):
 		Modellines.append( TGraph())
-		Modellines[iModellines].SetTitle("MinMBH v.s. MD")
 		Modellines[iModellines].SetName("%s_n%s"%(M.ModelID,M.n))	
-		Modellines[iModellines].SetPoint(Modellines[iModellines].GetN(), M.MD, M.getMinMBH())
-		print "MD=%s Min MBH=%s"% (M.MD, float(M.getMinMBH()))
+		Modellines[iModellines].SetTitle("%s_n%s"%(M.ModelID,M.n))	
+		
+		Modellines_exp.append( TGraph())
+		Modellines_exp[iModellines].SetName("%s_n%s"%(M.ModelID,M.n))	
+		Modellines_exp[iModellines].SetTitle("%s_n%s"%(M.ModelID,M.n))	
+
+		minMBH_obs= M.getMinMBH("Obs")
+		minMBH_exp= M.getMinMBH("Exp")
+		if not minMBH_obs==0.0:
+			Modellines[iModellines].SetPoint(Modellines[iModellines].GetN(), M.MD/1000., minMBH_obs/1000.)
+			Modellines_exp[iModellines].SetPoint(Modellines_exp[iModellines].GetN(), M.MD/1000., minMBH_exp/1000.)
+		print "Adding Model line: %s_n%s" %(M.ModelID,M.n)
+		print "MD=%s Min MBH=%s"% (M.MD, minMBH_obs)
 	else:
 		M_pre = Modelpoints[iModel-1]
 		#print M_pre.MD,M_pre.MD, M.n,M_pre.n,M.ModelID,M_pre.ModelID
+
+		#if model points differ only by MD, add the points to current Modellins
 		if( M.MD != M_pre.MD and M.n == M_pre.n and M.ModelID == M_pre.ModelID):
-			Modellines[iModellines].SetPoint(Modellines[iModellines].GetN(), M.MD, M.getMinMBH())
-			print "MD=%s Min MBH=%s"% (M.MD, float(M.getMinMBH()))
+			minMBH_obs = M.getMinMBH("Obs")
+			minMBH_exp = M.getMinMBH("Exp")
+			if not minMBH_obs==0.0:
+				Modellines[iModellines].SetPoint(Modellines[iModellines].GetN(), M.MD/1000., minMBH_obs/1000.)
+				Modellines_exp[iModellines].SetPoint(Modellines_exp[iModellines].GetN(), M.MD/1000., minMBH_exp/1000.)
+			print "MD=%s Min MBH=%s"% (M.MD, minMBH_obs)
 		else:
+			minMBH_obs = M.getMinMBH("Obs")
+			minMBH_exp = M.getMinMBH("Exp")
 			Modellines.append( TGraph())
-			Modellines[iModellines].SetTitle("MinMBH v.s. MD")
-			Modellines[iModellines].SetName("%s_n%s"%(M.ModelID,M.n))	
 			iModellines = iModellines+1
+			Modellines[iModellines].SetName("%s_n%s"%(M.ModelID,M.n))	
+			Modellines[iModellines].SetTitle("%s_n%s"%(M.ModelID,M.n))	
+
+			Modellines_exp.append( TGraph())
+			Modellines_exp[iModellines].SetName("%s_n%s"%(M.ModelID,M.n))	
+			Modellines_exp[iModellines].SetTitle("%s_n%s"%(M.ModelID,M.n))	
+
+			if not minMBH_obs==0.0:
+				Modellines[iModellines].SetPoint(Modellines[iModellines].GetN(), M.MD/1000., minMBH_obs/1000.)
+				Modellines_exp[iModellines].SetPoint(Modellines_exp[iModellines].GetN(), M.MD/1000., minMBH_exp/1000.)
+			print "Adding Model line: %s_n%s" %(M.ModelID,M.n)
+			print "MD=%s Min MBH=%s"% (M.MD, minMBH_obs)
 	iModel=iModel+1
+iline =0
+c1 = TCanvas("c1","c1",800,600)
 for line in Modellines:
+	line.SetLineColor(kBlue)
+	line.SetMarkerStyle(kFullSquare)
+	line.SetMarkerColor(kBlue)
+
+	Modellines_exp[iline].SetLineColor(kBlack)
+	Modellines_exp[iline].SetLineStyle(2)
+	Modellines_exp[iline].SetMarkerStyle(kFullCircle)
+	Modellines_exp[iline].SetMarkerColor(kBlack)
+
+	leg = TLegend(0.7,0.7,0.9,0.9)
+	leg.AddEntry( line,"Observed","lp")
+	leg.AddEntry( Modellines_exp[iline],"Expected","lp")
+	line.Draw("ALP")
+	Modellines_exp[iline].Draw("LPsame")
+	leg.Draw()
+	print "Modelline name= %s"%line.GetName()
+	line.GetXaxis().SetTitle("MD(TeV)")
+	line.GetYaxis().SetTitle("Min MBH(TeV)")
+	c1.SetName("%s_canvas"%line.GetName())
+	c1.Update()
+	c1.Write()
 	line.Write()
+	c1.Clear()
+	iline+=1
 print "Found %i model lines" % len(Modellines)
 ####################################################
 print "Start making plots ..."
@@ -167,167 +237,126 @@ canvas.SetTickx(0)
 canvas.SetTicky(0)
 frame = canvas.GetFrame()
 
-### Stage 2: Draw multigraphs (one multigraph for ALL modelpoints) ###
-Zbi_mg   = TMultiGraph()
-StOpt_mg = TMultiGraph()
-NOpt_mg  = TMultiGraph()
-
-#Zbi_mg.SetName("Zbi_mg")
-#StOpt_mg.SetName("StOpt_mg")
-#NOpt_mg.SetName("NOpt_mg")
-#Zbi_mg.SetName("Zbi_mg")
-#Zbi_mg.SetTitle(";MBH(TeV);Best Zbi")
-#StOpt_mg.SetTitle(";MBH(TeV);ST Opt (GeV)")
-#NOpt_mg.SetTitle(";MBH(TeV);N Opt")
-
-#LegendPos:
-TR = [0.7,0.7,0.9,0.9]
-BR = [0.7,0.2,0.9,0.4]
-
-#Add Graphs
-iColor=1
-
-drawTR = True
-#for i in range(0,len(ZbiOpt_grph)):
-#	ZbiOpt_grph[i].SetLineColor(iColor)
-#	StOpt_grph[i].SetLineColor(iColor)
-#	NOpt_grph[i].SetLineColor(iColor)
-#	ZbiOpt_grph[i].SetFillColor(0)
-#	StOpt_grph[i].SetFillColor(0)
-#	NOpt_grph[i].SetFillColor(0)
-#	ZbiOpt_grph[i].SetFillStyle(0)
-#	StOpt_grph[i].SetFillStyle(0)
-#	NOpt_grph[i].SetFillStyle(0)
-#	ZbiOpt_grph[i].SetMarkerStyle(2)
-#	StOpt_grph[i].SetMarkerStyle(2)
-#	StOpt_grph[i].SetMarkerStyle(2)
-#	Zbi_mg.Add(ZbiOpt_grph[i])	
-#	StOpt_mg.Add(StOpt_grph[i])	
-#	NOpt_mg.Add(StOpt_grph[i])	
+#### Stage 2: Draw multigraphs (one multigraph for ALL modelpoints) ###
+#Zbi_mg   = TMultiGraph()
+#StOpt_mg = TMultiGraph()
+#NOpt_mg  = TMultiGraph()
+#
+##Zbi_mg.SetName("Zbi_mg")
+##StOpt_mg.SetName("StOpt_mg")
+##NOpt_mg.SetName("NOpt_mg")
+##Zbi_mg.SetName("Zbi_mg")
+##Zbi_mg.SetTitle(";MBH(TeV);Best Zbi")
+##StOpt_mg.SetTitle(";MBH(TeV);ST Opt (GeV)")
+##NOpt_mg.SetTitle(";MBH(TeV);N Opt")
+#
+##LegendPos:
+#TR = [0.7,0.7,0.9,0.9]
+#BR = [0.7,0.2,0.9,0.4]
+#
+##Add Graphs
+#iColor=1
+#
+#drawTR = True
+###Draw ZBI
+#iColor=1
+#
+#drawTR = True
+#for g in ZbiOpt_grph:
+#	g.SetLineColor(iColor)
+#	g.SetFillColor(0)
+#	g.SetFillStyle(0)
+#	g.SetMarkerStyle(2)
+#	Zbi_mg.Add(g)	
 #	iColor +=1
-##Draw graphs
-#for mg in MGs:
-#	mg.Draw("AL*")
-#	if drawTR:
-#		canvas.BuildLegend(TR[0],TR[1],TR[2],TR[3])
-#	else:
-#		canvas.BuildLegend(BR[0],BR[1],BR[2],BR[3])
-#	print mg.GetName()
-#	mg.GetYaxis().SetTitleOffset(1)	
+#Zbi_mg.Draw("AL*")
+#if drawTR:
+#	canvas.BuildLegend(TR[0],TR[1],TR[2],TR[3])
+#else:
+#	canvas.BuildLegend(BR[0],BR[1],BR[2],BR[3])
+#Zbi_mg.GetXaxis().SetTitle("MBH(TeV)")
+#Zbi_mg.GetYaxis().SetTitle("Best Zbi")
+#Zbi_mg.GetYaxis().SetTitleOffset(1)	
 #
-#	#draw the lumi text on the canvas
-#	CMS_lumi.CMS_lumi(canvas, iPeriod, iPos)
+##draw the lumi text on the canvas
+#CMS_lumi.CMS_lumi(canvas, iPeriod, iPos)
 #
-#	canvas.cd()
-#	canvas.Update()
-#	canvas.RedrawAxis()
-#	frame = canvas.GetFrame()
-#	frame.Draw()
+#canvas.cd()
+#canvas.Update()
+#canvas.RedrawAxis()
+#frame = canvas.GetFrame()
+#frame.Draw()
 #
-#	canvas.SetName(mg.GetName())
-#	canvas.Update()
-#	canvas.Write()
-
+#canvas.SetName("Zbi_mg")
+#canvas.Update()
+#canvas.Write()
 ######################################### 
-##Draw ZBI
-iColor=1
-
-drawTR = True
-for g in ZbiOpt_grph:
-	g.SetLineColor(iColor)
-	g.SetFillColor(0)
-	g.SetFillStyle(0)
-	g.SetMarkerStyle(2)
-	Zbi_mg.Add(g)	
-	iColor +=1
-Zbi_mg.Draw("AL*")
-if drawTR:
-	canvas.BuildLegend(TR[0],TR[1],TR[2],TR[3])
-else:
-	canvas.BuildLegend(BR[0],BR[1],BR[2],BR[3])
-Zbi_mg.GetXaxis().SetTitle("MBH(TeV)")
-Zbi_mg.GetYaxis().SetTitle("Best Zbi")
-Zbi_mg.GetYaxis().SetTitleOffset(1)	
-
-#draw the lumi text on the canvas
-CMS_lumi.CMS_lumi(canvas, iPeriod, iPos)
-
-canvas.cd()
-canvas.Update()
-canvas.RedrawAxis()
-frame = canvas.GetFrame()
-frame.Draw()
-
-canvas.SetName("Zbi_mg")
-canvas.Update()
-canvas.Write()
-######################################## 
-##Draw StOpt
-iColor=1
-
-drawTR = True
-for g in StOpt_grph:
-	g.SetLineColor(iColor)
-	g.SetFillColor(0)
-	g.SetFillStyle(0)
-	g.SetMarkerStyle(2)
-	StOpt_mg.Add(g)	
-	iColor +=1
-StOpt_mg.Draw("AL*")
-if drawTR:
-	canvas.BuildLegend(TR[0],TR[1],TR[2],TR[3])
-else:
-	canvas.BuildLegend(BR[0],BR[1],BR[2],BR[3])
-StOpt_mg.GetXaxis().SetTitle("MBH(TeV)")
-StOpt_mg.GetYaxis().SetTitle("ST Opt (TeV)")
-StOpt_mg.GetYaxis().SetTitleOffset(1)	
-
-#draw the lumi text on the canvas
-CMS_lumi.CMS_lumi(canvas, iPeriod, iPos)
-
-canvas.cd()
-canvas.Update()
-canvas.RedrawAxis()
-frame = canvas.GetFrame()
-frame.Draw()
-
-canvas.SetName("StOpt_mg")
-canvas.Update()
-canvas.Write()
-########################################## 
-##Draw NOpt
-iColor=1
-
-drawTR = True
-for g in NOpt_grph:
-	g.SetLineColor(iColor)
-	g.SetFillColor(0)
-	g.SetFillStyle(0)
-	g.SetMarkerStyle(2)
-	NOpt_mg.Add(g)	
-	iColor +=1
-NOpt_mg.Draw("AL*")
-if drawTR:
-	canvas.BuildLegend(TR[0],TR[1],TR[2],TR[3])
-else:
-	canvas.BuildLegend(BR[0],BR[1],BR[2],BR[3])
-NOpt_mg.GetXaxis().SetTitle("MBH(TeV)")
-NOpt_mg.GetYaxis().SetTitle("N Opt")
-NOpt_mg.GetYaxis().SetTitleOffset(1)	
-
-#draw the lumi text on the canvas
-CMS_lumi.CMS_lumi(canvas, iPeriod, iPos)
-
-canvas.cd()
-canvas.Update()
-canvas.RedrawAxis()
-frame = canvas.GetFrame()
-frame.Draw()
-
-canvas.SetName("NOpt_mg")
-canvas.Update()
-canvas.Write()
-########################################## 
+###Draw StOpt
+#iColor=1
+#
+#drawTR = True
+#for g in StOpt_grph:
+#	g.SetLineColor(iColor)
+#	g.SetFillColor(0)
+#	g.SetFillStyle(0)
+#	g.SetMarkerStyle(2)
+#	StOpt_mg.Add(g)	
+#	iColor +=1
+#StOpt_mg.Draw("AL*")
+#if drawTR:
+#	canvas.BuildLegend(TR[0],TR[1],TR[2],TR[3])
+#else:
+#	canvas.BuildLegend(BR[0],BR[1],BR[2],BR[3])
+#StOpt_mg.GetXaxis().SetTitle("MBH(TeV)")
+#StOpt_mg.GetYaxis().SetTitle("ST Opt (TeV)")
+#StOpt_mg.GetYaxis().SetTitleOffset(1)	
+#
+##draw the lumi text on the canvas
+#CMS_lumi.CMS_lumi(canvas, iPeriod, iPos)
+#
+#canvas.cd()
+#canvas.Update()
+#canvas.RedrawAxis()
+#frame = canvas.GetFrame()
+#frame.Draw()
+#
+#canvas.SetName("StOpt_mg")
+#canvas.Update()
+#canvas.Write()
+########################################### 
+###Draw NOpt
+#iColor=1
+#
+#drawTR = True
+#for g in NOpt_grph:
+#	g.SetLineColor(iColor)
+#	g.SetFillColor(0)
+#	g.SetFillStyle(0)
+#	g.SetMarkerStyle(2)
+#	NOpt_mg.Add(g)	
+#	iColor +=1
+#NOpt_mg.Draw("AL*")
+#if drawTR:
+#	canvas.BuildLegend(TR[0],TR[1],TR[2],TR[3])
+#else:
+#	canvas.BuildLegend(BR[0],BR[1],BR[2],BR[3])
+#NOpt_mg.GetXaxis().SetTitle("MBH(TeV)")
+#NOpt_mg.GetYaxis().SetTitle("N Opt")
+#NOpt_mg.GetYaxis().SetTitleOffset(1)	
+#
+##draw the lumi text on the canvas
+#CMS_lumi.CMS_lumi(canvas, iPeriod, iPos)
+#
+#canvas.cd()
+#canvas.Update()
+#canvas.RedrawAxis()
+#frame = canvas.GetFrame()
+#frame.Draw()
+#
+#canvas.SetName("NOpt_mg")
+#canvas.Update()
+#canvas.Write()
+########################################### 
 ### Stage 3: Draw limit curves(one multigraph for each modelpoint) ###
 iColor=1
 
@@ -353,8 +382,8 @@ for i in range(0,len(Exp_limit)):
 	TwoSig_limit[i].GetYaxis().SetTitle("95% CL on #sigma  (fb)")
 	TwoSig_limit[i].GetYaxis().SetTitleOffset(1)
 	TwoSig_limit[i].SetTitle("")
-	TwoSig_limit[i].SetMinimum(1e-4)
-	TwoSig_limit[i].SetMaximum(200)
+	TwoSig_limit[i].SetMinimum(ymin)
+	TwoSig_limit[i].SetMaximum(ymax)
 	TwoSig_limit[i].Draw("AE3")
 	OneSig_limit[i].Draw("sameE3")
 	Exp_limit[i].Draw("sameL")

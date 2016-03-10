@@ -1,9 +1,11 @@
-# This is a script to calculate the Zbi significance from the M.I. data card
-# Data card is the txt output from fitSThists.py
-# Usage        : python ZbiCalculator_v3.py Masspointlist.txt Output.txt
+# This is a script to calculate the Zbi significance from the M.I. limit
+# In v4, tau = 1/normfactor, n_off = "N=2" St dist. , n_on = sig+bkg
+#   update:   Pbi is minimized, instead of maximizing Zbi.
+#
+# Usage        : python ZbiCalculator_v4.py Masspointlist.txt Output.txt
 # Output files : STMin_optimized.txt STmin_optimized.root
-# Input files  : Data.root_InclusiveX.txt 
-# Martin Kwok 1/28/2016
+# Input files  : See git hub repo
+# Martin Kwok 5 March,2016
 
 from ROOT import *
 from ROOT import TMath
@@ -28,18 +30,21 @@ def getZbi(n_on, n_off, tau):
 
 
 IntLumi =  2263.5   	# Integrated Luminosity in pb^-1
-eospath="/store/group/phys_exotica/BH_RunII/BlackMax_NTuple/"
+eospath="/store/group/phys_exotica/BH_RunII/QBH_ADD_NTuple/"
+#eospath="/store/group/phys_exotica/BH_RunII/BlackMax_NTuple/"
 #eospath="/store/group/phys_exotica/BH_RunII/SB_Ntuple_Final/"
-XsecDB="BlackMax_xsection.txt"
+XsecDB="QBH_ADD_xsection.txt"
+#XsecDB="BlackMax_xsection.txt"
 #XsecDB="SB_xsection_extra.txt"
 MILimit="MILimits.txt"
-ModelClass="BM"			#or BM
-NScanMin  = 7
+ModelClass="QBH_ADD"			#or BM, SB, QBH_ADD, QBH_RS1
+NScanMin  = 2
 NScanMax  = 10
 SaveDump = True
 ##############################
 
-eosHeader="root://eoscms.cern.ch/"
+eosHeader="eos/cms"
+#eosHeader="root://eoscms.cern.ch/"
 data  ="all2015C+D_NoMetCut+NewMETFilter.root"
 DataRoot  =TFile("%s"%data)
 DataDir   =DataRoot.Get("ST")
@@ -63,15 +68,11 @@ MasspointListInput = open("%s"%argv[1],"r")
 Nfiles   =0
 
 PlotFile = TFile.Open("%s.root"%argv[2].replace(".txt",""),"recreate")
-PlotSTopt  = TGraph()
-PlotSTopt.SetTitle("Optimal ST v.s MBH")
-PlotSTopt.SetName("STopt")
-PlotZbiOpt = TGraph()
-PlotZbiOpt.SetTitle("Best Zbi v.s. MBH")
-PlotZbiOpt.SetName("ZbiOpt")
 
 ZbiBest2D=[]
 iFile=0
+iMissing=0
+MissingPoints=[]
 gStyle.SetOptStat(0)
 for line in MasspointListInput: 
 	Masspoint=[]
@@ -92,10 +93,13 @@ for line in MasspointListInput:
 	#nST = Best ST for a particular Nmin
 	nST_list =[]
 	nZbi_list =[]
+	nPbi_list =[]
 	nYield_list =[]
 	nMin_list =[]
 	if (ModelClass=="SB" or ModelClass=="BM"):
 		PlotTitle = signal.strip("BlackMaxLHArecord_").strip("_FlatTuple.root")
+	if ("QBH" in ModelClass):
+		PlotTitle = signal.strip("_FlatTuple.root")
 	ZbiBest2D.append( TH2F("%s"%PlotTitle,"%s"%PlotTitle,9,2,11,60,2000,8000))
 	#print "Processing %s"%signal
 	if SaveDump:
@@ -129,49 +133,58 @@ for line in MasspointListInput:
 		if SaveDump:
 			Dump.write("STmin | Sig   bkg  | n_on n_off tau | Zbi   Pbi |  S/Sqrt(B)  Accptance\n")
 		# Scan through ST
+		Pbi_list   =[]
 		Zbi_list   =[]
 		STMin_list =[]
 		Yield_list =[]
 		for stmin in range(20, 80):
-			if (stmin*100<upperNormEdge):
+			if (stmin*100<=upperNormEdge):
 				continue
 			sig=0
 			n_off=0
 			startbin=stInc_sig.GetXaxis().FindBin(float(stmin*100))
 			for stbin in range (startbin, stInc_sig.GetXaxis().GetNbins()):
 				sig+=stInc_sig.GetBinContent(stbin)
-			#	n_off+=stExc_data.GetBinContent(stbin)
 			n_off=bestfitN2.Integral(stmin*100,9999999)/100
 			bkg= bestfitN2_Normalized.Integral(stmin*100, 9999999)/100
-			#tau = bkg/(deltaB**2)
 			tau = 1/normfactor
 			n_on =sig+bkg
 			Zbi  = getZbi(n_on,n_off,tau)
 			Pbi  = getPbi(n_on,n_off,tau)
+			Pbi_list.append(Pbi)
 			Zbi_list.append(Zbi)
 			STMin_list.append(stmin*100)
 			Yield_list.append(sig)
 			if SaveDump:
 				Dump.write("%s |%.4f %.3f  | %.5f %.5f %.5f %.3f| %.5f %.5f |%.3f %.3f \n" % (stmin*100, sig, bkg,  n_on, n_off, tau, n_off/tau, Zbi, Pbi, sig/math.sqrt(bkg), sig/(IntLumi*Xsec)))
 			ZbiBest2D[iFile].Fill(i, stmin*100, getZbi(n_on,n_off,tau))
-		nST_list.append( STMin_list[Zbi_list.index(max(Zbi_list))])
-		nZbi_list.append(max(Zbi_list))
-		nYield_list.append( Yield_list[ Zbi_list.index(max(Zbi_list))])
+		nST_list.append( STMin_list[Pbi_list.index(min(Pbi_list))])
+        	nZbi_list.append(Zbi_list[Pbi_list.index(min(Pbi_list))])
+        	nPbi_list.append(min(Pbi_list))
+		nYield_list.append( Yield_list[ Pbi_list.index(min(Pbi_list))])
+		#nST_list.append( STMin_list[Zbi_list.index(max(Zbi_list))])
+		#nZbi_list.append(max(Zbi_list))
+		#nYield_list.append( Yield_list[ Zbi_list.index(max(Zbi_list))])
 		nMin_list.append(i)
-	MaxZbi= max(nZbi_list)
-	STopt = nST_list[   nZbi_list.index(MaxZbi)]
-	Yield = nYield_list[nZbi_list.index(MaxZbi)]
-	Nopt  = nMin_list  [nZbi_list.index(MaxZbi)]
+	#MaxZbi= max(nZbi_list)
+	MinPbi= min(nPbi_list)
+	MaxZbi= nZbi_list[  nPbi_list.index(MinPbi)]
+	STopt = nST_list[   nPbi_list.index(MinPbi)]
+	Yield = nYield_list[nPbi_list.index(MinPbi)]
+	Nopt  = nMin_list  [nPbi_list.index(MinPbi)]
 	Acceptance = Yield / (IntLumi*Xsec)
 	MInorm     = (IntLumi/1000)*Acceptance
 	MIdata     = getMI(STopt, Nopt, MILimit)
+	if MIdata[1]==0:
+		iMissing=iMissing+1
+		MissingPoints.append("%s %.0f %i %.0f %s %s %.3f"%(Masspoint[0], Masspoint[1],Masspoint[3],Masspoint[2], STopt, Nopt,MaxZbi))
 	Output.write("%s %.0f %i %.0f %s %s %.3f %.6f %f %.5f" % (Masspoint[0], Masspoint[1],Masspoint[3],Masspoint[2], STopt, Nopt,MaxZbi, Yield, Xsec*1000, Acceptance))
 	Output.write(" %s %.3f %.3f %.3f %.3f %.3f %.3f \n"%(MIdata[0], MIdata[1]/MInorm, MIdata[2]/MInorm ,MIdata[3]/MInorm,MIdata[4]/MInorm,MIdata[5]/MInorm,MIdata[6]/MInorm))
-	PlotSTopt.SetPoint(PlotSTopt.GetN(),MBH,STopt)
-	PlotZbiOpt.SetPoint(PlotZbiOpt.GetN(),MBH,MaxZbi)
 	PlotFile.cd()	
 	ZbiBest2D[iFile].Write()
 	iFile=iFile+1
-PlotFile.cd()	
-PlotSTopt.Write()
-PlotZbiOpt.Write()
+print " Missing %s points in MI limit. Printing as follows:"%iMissing
+Dump.write(" Missing %s points in MI limit. Printing as follows:\n"%iMissing)
+for line in MissingPoints:
+	print line
+	Dump.write("%s\n"%line)
