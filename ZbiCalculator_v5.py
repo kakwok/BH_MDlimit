@@ -35,7 +35,7 @@ IntLumi =  2263.5   	# Integrated Luminosity in pb^-1
 eospath="/store/group/phys_exotica/BH_RunII/QBH_ADD_NTuple/"
 #eospath="/store/group/phys_exotica/BH_RunII/BlackMax_NTuple/"
 #eospath="/store/group/phys_exotica/BH_RunII/SB_Ntuple_Final/"
-eospath="" 
+#eospath="" 
 #XsecDB="QBH_RS1_xsection.txt"
 XsecDB="QBH_ADD_xsection.txt"
 #XsecDB="BlackMax_xsection.txt"
@@ -90,6 +90,8 @@ for PathAndFile in MasspointListInput:
 	rawFile   = eosHeader + eospath + "%s"%raw
 	SignalFlatRoot  = TFile.Open("./%s"%PathAndFile)
 	SignalDir       = SignalFlatRoot.Get("ST")
+	#print " Opening FlatTuple file: %s" % PathAndFile
+	#print " Opening RawTuple file: %s" % rawFile
 	if(os.path.exists(rawFile)):
 		SignalOrgRoot=TFile.Open(rawFile)
 		Ngen         =SignalOrgRoot.Get("bhana").Get("t").GetEntries()
@@ -97,7 +99,6 @@ for PathAndFile in MasspointListInput:
 		Ngen         = SignalFlatRoot.Get("Ngen").GetBinContent(1)
 	else:
 		print "Cannot find Ngen in original NTuple in eos Or Ngen histogram in SignalFlatTuple."
-	#Masspoint    = getXsec(signal,XsecDB,ModelClass)
 	Masspoint    = getXsec(PathAndFile,XsecDB,ModelClass)
 	#Masspoint =[Model  MD   MBH n  Xsec]
 	MBH     = Masspoint[2]
