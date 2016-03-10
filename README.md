@@ -55,10 +55,15 @@ This is important for interpolating the correct minMBH.
 mkdir ./plots
 python MakeMDroot.py StOpt_Model.txt -b
 ```
-Output: `StOpt_Model_plots.root`
+Output: `./plots/StOpt_Model_plots.root`
 
 ####iii) Make the final limit plot
 There is one seperate plotting script for each final plot.
 ```
 python drawSB.py -b
+```
+####iv) Make sanity check plots
+```
+cd plots
+python makepdf.py StOpt_Model_plots.root -b
 ```
