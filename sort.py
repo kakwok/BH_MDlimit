@@ -13,7 +13,6 @@ for line in f:
 	lines.append(line)
 
 header = lines.pop(0)
-del lines[0]
 
 lines= sorted(lines,key=lambda Hash:float(Hash[3]))
 lines= sorted(lines,key=lambda Hash:float(Hash[1])+float(Hash[2]))
