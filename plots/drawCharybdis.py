@@ -39,19 +39,27 @@ frame = canvas.GetFrame()
 
 #f = TFile("StOpt_BHfull_plot.root")
 f = TFile("StOpt_Charybdis_plot.root")
+f2 = TFile("StOpt_Charybdis_BH6_plot.root")
+f3 = TFile("StOpt_Charybdis_BH10_plot.root")
 BH2_n2 = f.Get("BH2_n2")
 BH2_n4 = f.Get("BH2_n4")
 BH2_n6 = f.Get("BH2_n6")
 BH4_n2 = f.Get("BH4_n2")
 BH4_n4 = f.Get("BH4_n4")
 BH4_n6 = f.Get("BH4_n6")
+BH6_n2 = f2.Get("BH6_n2")
+BH6_n4 = f2.Get("BH6_n4")
+BH6_n6 = f2.Get("BH6_n6")
 BH8_n2 = f.Get("BH8_n2")
 BH8_n4 = f.Get("BH8_n4")
 BH8_n6 = f.Get("BH8_n6")
+BH10_n6 = f3.Get("BH10_n6")
 
 BH2=[BH2_n2,BH2_n4,BH2_n6]
 BH4=[BH4_n2,BH4_n4,BH4_n6]
+BH6=[BH6_n2,BH6_n4,BH6_n6]
 BH8=[BH8_n2,BH8_n4,BH8_n6]
+BH10=[BH10_n6]
 for g in BH8:
 	g.SetLineColor(12)
 	g.SetFillColor(12)
@@ -70,6 +78,19 @@ for g in BH4:
 	g.SetMarkerStyle(kFullCircle)
 	g.SetMarkerColor(kOrange)
 	g.SetLineWidth(2)
+for g in BH6:
+	g.SetLineColor(kRed)
+	g.SetFillColor(kRed)
+	g.SetMarkerStyle(kFullSquare)
+	g.SetMarkerColor(kRed)
+	g.SetLineWidth(2)
+for g in BH10:
+	g.SetLineColor(kGreen)
+	g.SetFillColor(kGreen)
+	g.SetMarkerStyle(kFullSquare)
+	g.SetMarkerColor(kGreen)
+	g.SetLineWidth(2)
+
 
 mg = TMultiGraph()
 
@@ -82,12 +103,18 @@ mg.Add(BH2_n6)
 mg.Add(BH4_n2)
 mg.Add(BH4_n4)
 mg.Add(BH4_n6)
+mg.Add(BH6_n2)
+mg.Add(BH6_n4)
+mg.Add(BH6_n6)
+mg.Add(BH10_n6)
+
+
 
 mg.SetMinimum(5)
 mg.SetMaximum(10)
 
 mg.Draw("ALP")
-mg.GetXaxis().SetTitle("MD (TeV)")
+mg.GetXaxis().SetTitle("M_D (TeV)")
 mg.GetYaxis().SetTitle("Excluded M_{BH}^{min} (TeV)")
 mg.SetTitle("")
 
@@ -106,12 +133,14 @@ frame = canvas.GetFrame()
 frame.Draw()
 
 leg= TLegend(0.15,0.15,0.4,0.4, "Charybdis", "brNDC")
-leg.AddEntry(BH2_n2,"Rotating with graviton(BH2)","pl")
-leg.AddEntry(BH4_n2,"Nonrotating (BH4)","pl")
-leg.AddEntry(BH8_n2,"Rotating, using flux criterion for remnant(BH8)","pl")
+leg.AddEntry(BH2_n2,"Rotating (C1)","pl")
+leg.AddEntry(BH4_n2,"Nonrotating (C2)","pl")
+leg.AddEntry(BH8_n2,"Rotating, alternative evaporation model(C3)","pl")
+leg.AddEntry(BH6_n2,"Rotating, Yoshino-Rychkov loss (C4)","pl")
+leg.AddEntry(BH10_n6,"Rotating, stable remnant (C5)","pl")
 leg.SetBorderSize(0)
 leg.Draw()
 leg.SetTextFont(42)
 leg.SetTextSize(0.045)
 
-canvas.SaveAs("Charybdis_final.pdf")
+canvas.SaveAs("Charybdis_final_BH6+BH10.pdf")
