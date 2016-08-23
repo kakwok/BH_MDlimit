@@ -165,8 +165,7 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
 
   // variables accessed from the tree
   //TODO
-  //Bool_t     firedHLT_PFHT800_v2       ;
-  Bool_t     firedHLT_PFHT800_v1       ;
+  Bool_t     firedHLT_PFHT800            ;
   Bool_t     passed_CSCTightHaloFilter ;
   Bool_t     passed_goodVertices       ;
   Bool_t     passed_eeBadScFilter      ;
@@ -206,8 +205,7 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
 
   // tree branches
   //TODO
-  //TBranch  *b_firedHLT_PFHT800_v2       ;
-  TBranch  *b_firedHLT_PFHT800_v1       ;
+  TBranch  *b_firedHLT_PFHT800          ;
   TBranch  *b_passed_CSCTightHaloFilter ;
   TBranch  *b_passed_goodVertices       ;
   TBranch  *b_passed_eeBadScFilter      ;
@@ -261,8 +259,7 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
 
   // set all branch addresses
   // TODO
-  //chain.SetBranchAddress( "firedHLT_PFHT800_v2"       ,  &firedHLT_PFHT800_v2       ,  &b_firedHLT_PFHT800_v2       );
-  chain.SetBranchAddress( "firedHLT_PFHT800_v1"       ,  &firedHLT_PFHT800_v1       ,  &b_firedHLT_PFHT800_v1       );
+  chain.SetBranchAddress( "firedHLT_PFHT800"          ,  &firedHLT_PFHT800          ,  &b_firedHLT_PFHT800       );
   chain.SetBranchAddress( "passed_CSCTightHaloFilter" ,  &passed_CSCTightHaloFilter ,  &b_passed_CSCTightHaloFilter );
   chain.SetBranchAddress( "passed_goodVertices"       ,  &passed_goodVertices       ,  &b_passed_goodVertices       );
   chain.SetBranchAddress( "passed_eeBadScFilter"      ,  &passed_eeBadScFilter      ,  &b_passed_eeBadScFilter      );
@@ -330,11 +327,7 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
     chain.GetEntry(iEvent);
     // apply trigger and filter requirements
     //TODO
-    if ( isData &&
-       //  (    !firedHLT_PFHT800_v2 || !passed_CSCTightHaloFilter
-         (    !firedHLT_PFHT800_v1 || !passed_CSCTightHaloFilter
-           || !passed_goodVertices || !passed_eeBadScFilter     )
-                                                                  ) continue;
+    if ( isData &&  (    !firedHLT_PFHT800    || !passed_CSCTightHaloFilter   || !passed_goodVertices || !passed_eeBadScFilter     ) ) continue;
 
         // use Yutaro's method for applying the event filter
         passMETfilterList=true;
