@@ -31,19 +31,21 @@ def getZbi(n_on, n_off, tau):
 
 
 IntLumi =  2263.5   	# Integrated Luminosity in pb^-1
+
+
 #eospath="/store/group/phys_exotica/BH_RunII/QBH_RS1_NTuple/"
 #eospath="/store/group/phys_exotica/BH_RunII/QBH_ADD_NTuple/"
-eospath="/store/group/phys_exotica/BH_RunII/SB_Ntuple_Final/"
+#eospath="/store/group/phys_exotica/BH_RunII/SB_Ntuple_Final/"
 #eospath="/store/group/phys_exotica/BH_RunII/BlackMax_NTuple/"
-#eospath="" 
+eospath="" 				#Use empty path for newer FlatTuple with Ngen information
 #XsecDB="QBH_RS1_xsection.txt"
 #XsecDB="QBH_ADD_xsection.txt"
 #XsecDB="SB_xsection_extra.txt"
 #XsecDB="BlackMax_xsection.txt"
-#XsecDB="Charybdis_xsection.txt"
-XsecDB="Charybdis_SB_xsection.txt"
+XsecDB="Charybdis_BH10_xsection.txt"
+#XsecDB="Charybdis_SB_xsection.txt"
 MILimit="MILimits.txt"
-ModelClass="SB"			#or BM, BM_full, SB, QBH_ADD, QBH_RS1, CYBD
+ModelClass="CYBD"				#or BM, BM_full, SB, QBH_ADD, QBH_RS1, CYBD
 NScanMin  = 2
 NScanMax  = 10
 SaveDump = True
@@ -134,7 +136,7 @@ for PathAndFile in MasspointListInput:
 
 		# Calculate normalization factor for fitting functions
 		if SaveDump:
-			Dump.write("STmin | Sig   bkg  | n_on n_off tau | Zbi   Pbi |  S/Sqrt(B)  Accptance\n")
+			Dump.write("STmin | Sig   Accptance | Expected limit \n")
 		# Scan through ST
 		ExpLimit_list   =[]
 		Zbi_list   =[]
