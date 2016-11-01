@@ -32,6 +32,8 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
   int  nDumpedEvents = 0     ;
   bool useMETcut     = false ;
   int  nBin	     = 100   ; // 100 for 100 GeV bin, 1000 for 10 GeV bin in ST histograms	
+  int  STlow         = 0     ;// Lower bound of ST histogram: 500 GeV or 0 GeV
+
 
   // define output textfile
   ofstream outTextFile;
@@ -39,7 +41,12 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
   outTextFile.open(outTextFilename.c_str());
 
   // define output histograms
-  TH1F Ngen = TH1F("Ngen","Ngen",1,0,1);
+  // Basic quantities
+  TH1F Ngen     = TH1F("Ngen" ,"Ngen" ,1,0,1);
+  TH1F NJets    = TH1F("NJets","NJets",20,0,20);
+  TH1F h_mBH    = TH1F("mBH"  ,"mBH"  ,130,0,13000);
+  TH1F MET      = TH1F("MET"  ,"MET"  ,130,0,13000);
+  TH1F OurMET   = TH1F("OurMET"  ,"OurMET"  ,130,0,13000);
 
   TH2F METvsMHT                            = TH2F("METvsMHT"                            ,  "METvsMHT"                        ,  1000,  0.,  20000.,  1000,  0.,  20000.);
   TH2F METvsMHTinc2                        = TH2F("METvsMHTinc2"                        ,  "METvsMHTinc2"                    ,  1000,  0.,  20000.,  1000,  0.,  20000.);
@@ -100,16 +107,16 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
   TH1F PhotonJetoverlapdR4     = TH1F("PhotonJetoverlapdR4"     ,  "PhotonJetoverlapdR4"     ,  300,   0., .3);
 
   // loop to create ST histograms for inclusive and exclusive multiplicities from 2 up to multMax
-  TH1F stHist = TH1F("stHist", "ST", nBin, 500, 10500);
-  TH1F stHist_tight = TH1F("stHist_tight", "ST_tight", nBin, 500, 10500);
+  TH1F stHist = TH1F("stHist", "ST", nBin, STlow, 10500);
+  TH1F stHist_tight = TH1F("stHist_tight", "ST_tight", nBin, STlow, 10500);
   int mult=2;
   int multMax = 12;
   TH1F *stIncHist[multMax-2];
   TH1F *stExcHist[multMax-2];
   TH1F *stIncHist_tight[multMax-2];
   TH1F *stExcHist_tight[multMax-2];
-  TH1F stHistMHT = TH1F("stHistMHT", "ST using MHT", nBin, 500, 10500);
-  TH1F stHistMHT_tight = TH1F("stHistMHT_tight", "ST_tight using MHT_tight", nBin, 500, 10500);
+  TH1F stHistMHT = TH1F("stHistMHT", "ST using MHT", nBin, Stlow, 10500);
+  TH1F stHistMHT_tight = TH1F("stHistMHT_tight", "ST_tight using MHT_tight", nBin, Stlow, 10500);
   TH1F *stIncHistMHT[multMax-2];
   TH1F *stExcHistMHT[multMax-2];
   TH1F *stIncHistMHT_tight[multMax-2];
@@ -118,21 +125,21 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
   // These use pat::slimmedMETs
   for (int iHist = 0; iHist<multMax-2; ++iHist) {
     sprintf(histTitle, "stInc%02dHist", mult);
-    stIncHist[iHist] = new TH1F(histTitle, "Inclusive ST", nBin, 500, 10500);
+    stIncHist[iHist] = new TH1F(histTitle, "Inclusive ST", nBin, Stlow, 10500);
     sprintf(histTitle, "stExc%02dHist", mult);
-    stExcHist[iHist] = new TH1F(histTitle, "Exclusive ST", nBin, 500, 10500);
+    stExcHist[iHist] = new TH1F(histTitle, "Exclusive ST", nBin, Stlow, 10500);
     sprintf(histTitle, "stInc%02dHist_tight", mult);
-    stIncHist_tight[iHist] = new TH1F(histTitle, "Inclusive ST_tight", nBin, 500, 10500);
+    stIncHist_tight[iHist] = new TH1F(histTitle, "Inclusive ST_tight", nBin, Stlow, 10500);
     sprintf(histTitle, "stExc%02dHist_tight", mult);
-    stExcHist_tight[iHist] = new TH1F(histTitle, "Exclusive ST_tight", nBin, 500, 10500);
+    stExcHist_tight[iHist] = new TH1F(histTitle, "Exclusive ST_tight", nBin, Stlow, 10500);
     sprintf(histTitle, "stInc%02dHistMHT", mult);
-    stIncHistMHT[iHist] = new TH1F(histTitle, "Inclusive ST using MHT", nBin, 500, 10500);
+    stIncHistMHT[iHist] = new TH1F(histTitle, "Inclusive ST using MHT", nBin, Stlow, 10500);
     sprintf(histTitle, "stExc%02dHistMHT", mult);
-    stExcHistMHT[iHist] = new TH1F(histTitle, "Exclusive ST using MHT", nBin, 500, 10500);
+    stExcHistMHT[iHist] = new TH1F(histTitle, "Exclusive ST using MHT", nBin, Stlow, 10500);
     sprintf(histTitle, "stInc%02dHistMHT_tight", mult);
-    stIncHistMHT_tight[iHist] = new TH1F(histTitle, "Inclusive ST_tight using MHT_tight", nBin, 500, 10500);
+    stIncHistMHT_tight[iHist] = new TH1F(histTitle, "Inclusive ST_tight using MHT_tight", nBin, Stlow, 10500);
     sprintf(histTitle, "stExc%02dHistMHT_tight", mult);
-    stExcHistMHT_tight[iHist] = new TH1F(histTitle, "Exclusive ST_tight using MHT_tight", nBin, 500, 10500);
+    stExcHistMHT_tight[iHist] = new TH1F(histTitle, "Exclusive ST_tight using MHT_tight", nBin, Stlow, 10500);
     ++mult;
   }
 
@@ -166,9 +173,11 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
   // variables accessed from the tree
   //TODO
   Bool_t     firedHLT_PFHT800            ;
-  Bool_t     passed_CSCTightHaloFilter ;
+  Bool_t     passed_globalTightHalo2016Filter ;
   Bool_t     passed_goodVertices       ;
   Bool_t     passed_eeBadScFilter      ;
+  Bool_t     passed_filterbadChCandidate;
+  Bool_t     passed_filterbadPFMuon;
   int        runno                     ;
   long long  evtno                     ;
   int        lumiblock                 ;
@@ -202,13 +211,16 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
   float      MuPhi[25]                 ;
   float      MuPFdBiso[25]             ;
   float      Met                       ;
+  float      mBH                       ;
 
   // tree branches
   //TODO
   TBranch  *b_firedHLT_PFHT800          ;
-  TBranch  *b_passed_CSCTightHaloFilter ;
+  TBranch  *b_passed_globalTightHalo2016Filter ;
   TBranch  *b_passed_goodVertices       ;
   TBranch  *b_passed_eeBadScFilter      ;
+  TBranch  *b_passed_filterbadChCandidate;   
+  TBranch  *b_passed_filterbadPFMuon;   
   TBranch  *b_JetEt                     ;
   TBranch  *b_JetPx                     ;
   TBranch  *b_JetPy                     ;
@@ -242,6 +254,7 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
   TBranch  *b_runno                     ;
   TBranch  *b_evtno                     ;
   TBranch  *b_lumiblock                 ;
+  TBranch  *b_mBH 	                ;
 
   //create a chain by looping over the input filename
   TChain chain("bhana/t");
@@ -260,9 +273,11 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
   // set all branch addresses
   // TODO
   chain.SetBranchAddress( "firedHLT_PFHT800"          ,  &firedHLT_PFHT800          ,  &b_firedHLT_PFHT800       );
-  chain.SetBranchAddress( "passed_CSCTightHaloFilter" ,  &passed_CSCTightHaloFilter ,  &b_passed_CSCTightHaloFilter );
+  chain.SetBranchAddress( "passed_globalTightHalo2016Filter" ,  &passed_globalTightHalo2016Filter ,  &b_passed_globalTightHalo2016Filter );
   chain.SetBranchAddress( "passed_goodVertices"       ,  &passed_goodVertices       ,  &b_passed_goodVertices       );
   chain.SetBranchAddress( "passed_eeBadScFilter"      ,  &passed_eeBadScFilter      ,  &b_passed_eeBadScFilter      );
+  chain.SetBranchAddress( "passed_filterbadChCandidate"      ,  &passed_filterbadChCandidate      ,  &b_passed_filterbadChCandidate      );
+  chain.SetBranchAddress( "passed_filterbadPFMuon"      ,  &passed_filterbadPFMuon      ,  &b_passed_filterbadPFMuon      );
   chain.SetBranchAddress( "runno"                     ,  &runno                     ,  &b_runno                     );
   chain.SetBranchAddress( "lumiblock"                 ,  &lumiblock                 ,  &b_lumiblock                 );
   chain.SetBranchAddress( "evtno"                     ,  &evtno                     ,  &b_evtno                     );
@@ -296,6 +311,7 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
   chain.SetBranchAddress( "MuPhi"                     ,  MuPhi                      ,  &b_MuPhi                     );
   chain.SetBranchAddress( "MuPFdBiso"                 , MuPFdBiso                   ,  &b_MuPFdBiso                 );
   chain.SetBranchAddress( "Met"                       ,  &Met                       ,  &b_Met                       );
+  chain.SetBranchAddress( "mBH"                       ,  &mBH                       ,  &b_mBH                       );
 
   const int nEvents = chain.GetEntries();
   cout << "Number of events in chain is: " << nEvents << endl;
@@ -327,8 +343,16 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
     chain.GetEntry(iEvent);
     // apply trigger and filter requirements
     //TODO
-    if ( isData &&  (    !firedHLT_PFHT800    || !passed_CSCTightHaloFilter   || !passed_goodVertices || !passed_eeBadScFilter     ) ) continue;
+    if ( isData &&  
+	  ( !firedHLT_PFHT800    
+		|| !passed_globalTightHalo2016Filter 
+		|| !passed_goodVertices 
+		|| !passed_eeBadScFilter  
+		|| !passed_filterbadChCandidate  
+		|| !passed_filterbadPFMuon  
+	   ) ) continue;
 
+	h_mBH.Fill(mBH);
         // use Yutaro's method for applying the event filter
         passMETfilterList=true;
         auto rItr(list.find(runno));
@@ -496,7 +520,7 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
           }
           else break;
         }
-
+	NJets.Fill(multiplicity);
         //Electrons
         if (eventHasElectron) {
           for (int iElectron = 0; iElectron < 25; ++iElectron) {
@@ -721,6 +745,8 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
           if (multiplicity_tight == iHist+2 && passMetCut_tight) stExcHistMHT_tight[iHist]->Fill(STMHTnoMET_tight);
           if (multiplicity_tight >= iHist+2 && passMetCut_tight) stIncHistMHT_tight[iHist]->Fill(STMHTnoMET_tight);
         }
+	MET.Fill(Met);
+	OurMET.Fill(OurMet);
         METvsMHT.Fill(OurMet,Met);
         METvsMHT_tight.Fill(OurMet_tight,Met);
         if (multiplicity>=2){
@@ -746,7 +772,8 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
 
         // dump info on events with very big ST
         if (multiplicity>=2 && ST>5500 && dumpBigEvents) {
-          sprintf(messageBuffer, "In run number %d lumi section %d event number %lld: ST is %f, ST_tight is %f, and multiplicity is %d\n", runno, lumiblock, evtno, ST, ST_tight, multiplicity);
+          //sprintf(messageBuffer, "In run number %d lumi section %d event number %lld: ST is %f, ST_tight is %f, and multiplicity is %d\n", runno, lumiblock, evtno, ST, ST_tight, multiplicity);
+	  sprintf(messageBuffer, "In run number %d lumi section %d event number %llu: ST is %f, ST_tight is %f, and multiplicity is %d\n", runno, lumiblock, evtno, ST, ST_tight, multiplicity);
           outTextFile << messageBuffer;
           for (int j=0; j<25; ++j) {
             if(JetEt[j]>0.000) {
@@ -853,6 +880,10 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
   // write output root file
   TFile* outRootFile = new TFile(outFilename.c_str(), "RECREATE");
   Ngen.Write();
+  NJets.Write();
+  h_mBH.Write();
+  MET.Write();
+  OurMET.Write();
   outRootFile->cd();
   outRootFile->mkdir("ST");
   outRootFile->mkdir("ST_tight");
