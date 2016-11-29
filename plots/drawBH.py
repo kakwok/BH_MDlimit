@@ -48,10 +48,15 @@ BH2_n6 = f.Get("BH2_n6")
 BH5_n2 = f.Get("BH5_n2")
 BH5_n4 = f.Get("BH5_n4")
 BH5_n6 = f.Get("BH5_n6")
+BH5_n2_exp = f.Get("BH5_n2_exp")
+BH5_n4_exp = f.Get("BH5_n4_exp")
+BH5_n6_exp = f.Get("BH5_n6_exp")
+
 
 BH1=[BH1_n2,BH1_n4,BH1_n6]
 BH2=[BH2_n2,BH2_n4,BH2_n6]
 BH5=[BH5_n2,BH5_n4,BH5_n6]
+BH5_exp=[BH5_n2_exp,BH5_n4_exp,BH5_n6_exp]
 for g in BH1:
 	g.SetLineColor(12)
 	g.SetFillColor(12)
@@ -70,6 +75,14 @@ for g in BH5:
 	g.SetMarkerStyle(kFullCircle)
 	g.SetMarkerColor(kOrange)
 	g.SetLineWidth(2)
+for g in BH5_exp:
+	g.SetLineColor(kOrange)
+	g.SetFillColor(kOrange)
+	g.SetMarkerStyle(kFullCircle)
+	g.SetMarkerColor(kOrange)
+	g.SetLineWidth(2)
+	g.SetLineStyle(2)
+
 
 mg = TMultiGraph()
 
@@ -82,12 +95,16 @@ mg.Add(BH2_n6)
 mg.Add(BH5_n2)
 mg.Add(BH5_n4)
 mg.Add(BH5_n6)
+mg.Add(BH5_n2_exp)
+mg.Add(BH5_n4_exp)
+mg.Add(BH5_n6_exp)
+
 
 mg.SetMinimum(5)
 mg.SetMaximum(10)
 
 mg.Draw("ALP")
-mg.GetXaxis().SetTitle("MD (TeV)")
+mg.GetXaxis().SetTitle("M_D (TeV)")
 mg.GetYaxis().SetTitle("Excluded M_{BH}^{min} (TeV)")
 mg.SetTitle("")
 
@@ -105,14 +122,15 @@ canvas.RedrawAxis()
 frame = canvas.GetFrame()
 frame.Draw()
 
-leg= TLegend(0.15,0.15,0.4,0.4, "BlackMax(FullSim)", "brNDC")
-leg.AddEntry(BH1_n2,"Nonrotating(BH1)","pl")
+leg= TLegend(0.15,0.15,0.4,0.4, "BlackMax", "brNDC")
+leg.AddEntry(BH1_n2,"Non-rotating,no gravition(BH1)","pl")
 leg.AddEntry(BH2_n2,"Rotating(BH2)","pl")
 leg.AddEntry(BH5_n2,"Rotating(BH5)","pl")
+leg.AddEntry(BH5_n2_exp,"Rotating(BH5) Expected","pl")
 leg.SetBorderSize(0)
 leg.Draw()
 leg.SetTextFont(42)
 leg.SetTextSize(0.045)
 
 #canvas.SaveAs("BHlimit_final.pdf")
-canvas.SaveAs("BHlimit_fullsim_final.pdf")
+canvas.SaveAs("BHlimit_fullsim_May31.pdf")

@@ -7,6 +7,7 @@ import array
 
 Input = open("%s"%argv[1])
 PlotRoot = TFile.Open("./plots/%s_plot.root"%argv[1].replace(".txt",""),"recreate")
+PlotTxt = open("./plots/%s_plot.txt"%argv[1].replace(".txt",""),"w")
 
 ymin = 1e-3
 ymax = 1e3
@@ -24,16 +25,16 @@ next(Input)
 for line in Input:
 	line   = line.split()
 	ModelID= line[0]
-	MD     = int  (line[1])
-	n      = int  (line[2])
-	MBH    = float(line[3])
-	Stmin  = float(line[4])
-	nmin   = int  (line[5])
-	Zbi    = float(line[6])
-	signal = float(line[7])
-	Xsec   = float(line[8])
-	accpt   = float(line[9])
-	Stlimit   = float(line[10])
+	MD        = int  (line[1])
+	n         = int  (line[2])
+	MBH       = float(line[3])
+	Stmin     = float(line[4])
+	nmin      = int  (line[5])
+	Zbi       = float(line[6])
+	signal    = float(line[7])
+	accpt     = float(line[8])
+	Stlimit   = float(line[9])
+	Xsec      = float(line[10])
 	Obs       = float(line[11])
 	m2sig     = float(line[12])
 	m1sig     = float(line[13])
@@ -128,8 +129,8 @@ for M in Modelpoints:
 		Modellines[iModellines].SetTitle("%s_n%s"%(M.ModelID,M.n))	
 		
 		Modellines_exp.append( TGraph())
-		Modellines_exp[iModellines].SetName("%s_n%s"%(M.ModelID,M.n))	
-		Modellines_exp[iModellines].SetTitle("%s_n%s"%(M.ModelID,M.n))	
+		Modellines_exp[iModellines].SetName("%s_n%s_exp"%(M.ModelID,M.n))	
+		Modellines_exp[iModellines].SetTitle("%s_n%s_exp"%(M.ModelID,M.n))	
 
 		minMBH_obs= M.getMinMBH("Obs")
 		minMBH_exp= M.getMinMBH("Exp")
@@ -138,6 +139,8 @@ for M in Modelpoints:
 			Modellines_exp[iModellines].SetPoint(Modellines_exp[iModellines].GetN(), M.MD/1000., minMBH_exp/1000.)
 		print "Adding Model line: %s_n%s" %(M.ModelID,M.n)
 		print "MD=%s Min MBH=%s"% (M.MD, minMBH_obs)
+                PlotTxt.write("For Model line  %s_n%s: \n" % (M.ModelID, M.n))
+                PlotTxt.write("MD = %s   MinMBH = %s\n" % (M.MD, minMBH_obs))
 	else:
 		M_pre = Modelpoints[iModel-1]
 		#print M_pre.MD,M_pre.MD, M.n,M_pre.n,M.ModelID,M_pre.ModelID
@@ -150,6 +153,7 @@ for M in Modelpoints:
 				Modellines[iModellines].SetPoint(Modellines[iModellines].GetN(), M.MD/1000., minMBH_obs/1000.)
 				Modellines_exp[iModellines].SetPoint(Modellines_exp[iModellines].GetN(), M.MD/1000., minMBH_exp/1000.)
 			print "MD=%s Min MBH=%s"% (M.MD, minMBH_obs)
+                        PlotTxt.write("MD = %s   MinMBH = %s\n" % (M.MD, minMBH_obs))
 		else:
 			minMBH_obs = M.getMinMBH("Obs")
 			minMBH_exp = M.getMinMBH("Exp")
@@ -159,14 +163,16 @@ for M in Modelpoints:
 			Modellines[iModellines].SetTitle("%s_n%s"%(M.ModelID,M.n))	
 
 			Modellines_exp.append( TGraph())
-			Modellines_exp[iModellines].SetName("%s_n%s"%(M.ModelID,M.n))	
-			Modellines_exp[iModellines].SetTitle("%s_n%s"%(M.ModelID,M.n))	
+			Modellines_exp[iModellines].SetName("%s_n%s_exp"%(M.ModelID,M.n))	
+			Modellines_exp[iModellines].SetTitle("%s_n%s_exp"%(M.ModelID,M.n))	
 
 			if not minMBH_obs==0.0:
 				Modellines[iModellines].SetPoint(Modellines[iModellines].GetN(), M.MD/1000., minMBH_obs/1000.)
 				Modellines_exp[iModellines].SetPoint(Modellines_exp[iModellines].GetN(), M.MD/1000., minMBH_exp/1000.)
 			print "Adding Model line: %s_n%s" %(M.ModelID,M.n)
 			print "MD=%s Min MBH=%s"% (M.MD, minMBH_obs)
+                	PlotTxt.write("For Model line  %s_n%s: \n" % (M.ModelID, M.n))
+                	PlotTxt.write("MD = %s   MinMBH = %s\n" % (M.MD, minMBH_obs))
 	iModel=iModel+1
 iline =0
 c1 = TCanvas("c1","c1",800,600)
@@ -193,6 +199,7 @@ for line in Modellines:
 	c1.Update()
 	c1.Write()
 	line.Write()
+	Modellines_exp[iline].Write()
 	c1.Clear()
 	iline+=1
 print "Found %i model lines" % len(Modellines)

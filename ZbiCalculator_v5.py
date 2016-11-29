@@ -31,24 +31,27 @@ def getZbi(n_on, n_off, tau):
 
 
 IntLumi =  2263.5   	# Integrated Luminosity in pb^-1
+
+
 #eospath="/store/group/phys_exotica/BH_RunII/QBH_RS1_NTuple/"
-eospath="/store/group/phys_exotica/BH_RunII/QBH_ADD_NTuple/"
-#eospath="/store/group/phys_exotica/BH_RunII/BlackMax_NTuple/"
+#eospath="/store/group/phys_exotica/BH_RunII/QBH_ADD_NTuple/"
 #eospath="/store/group/phys_exotica/BH_RunII/SB_Ntuple_Final/"
-#eospath="" 
+#eospath="/store/group/phys_exotica/BH_RunII/BlackMax_NTuple/"
+eospath="" 				#Use empty path for newer FlatTuple with Ngen information
 #XsecDB="QBH_RS1_xsection.txt"
-XsecDB="QBH_ADD_xsection.txt"
-#XsecDB="BlackMax_xsection.txt"
+#XsecDB="QBH_ADD_xsection.txt"
 #XsecDB="SB_xsection_extra.txt"
-#XsecDB="Charybdis_xsection.txt"
+#XsecDB="BlackMax_xsection.txt"
+XsecDB="Charybdis_BH10_xsection.txt"
+#XsecDB="Charybdis_SB_xsection.txt"
 MILimit="MILimits.txt"
-ModelClass="QBH_ADD"			#or BM, BM_full, SB, QBH_ADD, QBH_RS1, CYBD
+ModelClass="CYBD"				#or BM, BM_full, SB, QBH_ADD, QBH_RS1, CYBD
 NScanMin  = 2
 NScanMax  = 10
 SaveDump = True
 ##############################
 
-eosHeader="eos/cms"
+eosHeader="/afs/cern.ch/user/k/kakwok/eos/cms"
 #eosHeader="root://eoscms.cern.ch/"
 data  ="all2015C+D_NoMetCut+NewMETFilter.root"
 DataRoot  =TFile("%s"%data)
@@ -64,7 +67,7 @@ fitNormRanges = FitAndNormRange("FitNormRanges.txt")
 #fitNormRanges.showNormRanges()
 
 Output   = open("%s"%argv[2],"w")
-Output.write("Model  MD   n  MBH | STMin   Nmin      Zbi      Nsignal     Xsec(fb)    Acept   StLimit   xsec(fb): Obs -2sig -1sig Exp +1sig +2sig  \n")
+Output.write("Model  MD   n  MBH | STMin   Nmin  | ExpLimit     Nsignal    Acept   StLimit  Xsec(fb) |  xsec(fb): Obs -2sig -1sig Exp +1sig +2sig  \n")
 
 if SaveDump:
 	Dump = open("%s.log"%argv[2].replace(".txt",""),"w")
@@ -79,7 +82,10 @@ iFile=0
 iMissing=0
 MissingPoints=[]
 gStyle.SetOptStat(0)
-for PathAndFile in MasspointListInput: 
+for PathAndFile in MasspointListInput:
+	if PathAndFile[0]=="#":
+		print "Skipping %s"%PathAndFile
+		continue 
 	Masspoint=[]
 	MIdata   =[]
 	#raw   ="BlackMaxLHArecord_BH5_BM_MD4000_MBH8000_n6_FlatTuple.root"
@@ -101,6 +107,7 @@ for PathAndFile in MasspointListInput:
 		print "Cannot find Ngen in original NTuple in eos Or Ngen histogram in SignalFlatTuple."
 	Masspoint    = getXsec(PathAndFile,XsecDB,ModelClass)
 	#Masspoint =[Model  MD   MBH n  Xsec]
+	#print Masspoint
 	MBH     = Masspoint[2]
 	Xsec    = Masspoint[4]
 	#nST = Best ST for a particular Nmin
@@ -129,7 +136,7 @@ for PathAndFile in MasspointListInput:
 
 		# Calculate normalization factor for fitting functions
 		if SaveDump:
-			Dump.write("STmin | Sig   bkg  | n_on n_off tau | Zbi   Pbi |  S/Sqrt(B)  Accptance\n")
+			Dump.write("STmin | Sig   Accptance | Expected limit \n")
 		# Scan through ST
 		ExpLimit_list   =[]
 		Zbi_list   =[]
@@ -176,8 +183,8 @@ for PathAndFile in MasspointListInput:
 	if MIdata[1]==0:
 		iMissing=iMissing+1
 		MissingPoints.append("%s %.0f %i %.0f %s %s "%(Masspoint[0], Masspoint[1],Masspoint[3],Masspoint[2], STopt, Nopt))
-	Output.write("%s %.0f %i %.0f %s %s %.3f %.6f %f %.5f" % (Masspoint[0], Masspoint[1],Masspoint[3],Masspoint[2], STopt, Nopt, MinLimit, Yield, Xsec*1000, Acceptance))
-	Output.write(" %s %.3f %.3f %.3f %.3f %.3f %.3f \n"%(MIdata[0], MIdata[1]/MInorm, MIdata[2]/MInorm ,MIdata[3]/MInorm,MIdata[4]/MInorm,MIdata[5]/MInorm,MIdata[6]/MInorm))
+	Output.write("%s %.0f %i %.0f    %s %s    %.3f %.3f %s %.5f %f" % (Masspoint[0], Masspoint[1],Masspoint[3],Masspoint[2], STopt, Nopt, MinLimit, Yield, MIdata[0],Acceptance,Xsec*1000))
+	Output.write("      %.3f %.3f %.3f %.3f %.3f %.3f \n"%( MIdata[1]/MInorm, MIdata[2]/MInorm ,MIdata[3]/MInorm,MIdata[4]/MInorm,MIdata[5]/MInorm,MIdata[6]/MInorm))
 	PlotFile.cd()	
 	LimitBest2D[iFile].Write()
 	iFile=iFile+1

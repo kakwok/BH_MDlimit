@@ -7,23 +7,27 @@ f = open("%s"%argv[1],"r")
 out = open("%s_sorted.txt"%argv[1].replace(".txt",""),"w")
 
 lines = []
-
+NoSplitLines = []
 for line in f:
-	line=line.split()
-	lines.append(line)
+	NoSplitLines.append("%s"%line)
+	lines.append(line.split())
 
-header = lines.pop(0)
-del lines[0]
+lines.pop(0)
+header = NoSplitLines.pop(0)
 
 lines= sorted(lines,key=lambda Hash:float(Hash[3]))
 lines= sorted(lines,key=lambda Hash:float(Hash[1])+float(Hash[2]))
 lines= sorted(lines,key=lambda Hash:Hash[0])
 
-lines.insert(0,header)
+out.write("%s"%header)
 for l in lines:
-	for item in l:
-		out.write("%s "%item)
-	out.write("\n")
+	key_sorted = l[0]+l[1]+l[2]+l[3]
+	for line in NoSplitLines:
+		split_line = line.split()
+		key        = split_line[0]+split_line[1]+split_line[2]+split_line[3]
+		#print key + "      " + key_sorted
+		if (key==key_sorted):
+			out.write("%s"%line)
 print "Moving %s to %s" %(argv[1],argv[1].replace(".txt",".bk"))
 renameIN="mv %s %s"%(argv[1],argv[1].replace(".txt",".bk"))
 print "Moving %s_sorted.txt to %s" %(argv[1].replace(".txt",""),argv[1])
