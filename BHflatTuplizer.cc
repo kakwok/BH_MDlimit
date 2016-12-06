@@ -24,10 +24,10 @@ std::map<unsigned, std::set<unsigned> > readEventList(char const* _fileName);
 
 void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string metListFilename) {
   std::map<unsigned, std::set<unsigned> > list = readEventList(metListFilename.c_str());
-  bool isData        = false  ;
+  bool isData        = true  ;
   bool debugFlag     = false ;
   int  eventsToDump  = 25    ;  // if debugFlag is true, then stop once the number of dumped events reaches eventsToDump
-  bool dumpBigEvents = false  ;
+  bool dumpBigEvents = true  ;
   bool dumpIsoInfo   = false ;
   int  nDumpedEvents = 0     ;
   bool useMETcut     = false ;
@@ -115,8 +115,8 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
   TH1F *stExcHist[multMax-2];
   TH1F *stIncHist_tight[multMax-2];
   TH1F *stExcHist_tight[multMax-2];
-  TH1F stHistMHT = TH1F("stHistMHT", "ST using MHT", nBin, Stlow, 10500);
-  TH1F stHistMHT_tight = TH1F("stHistMHT_tight", "ST_tight using MHT_tight", nBin, Stlow, 10500);
+  TH1F stHistMHT = TH1F("stHistMHT", "ST using MHT", nBin, STlow, 10500);
+  TH1F stHistMHT_tight = TH1F("stHistMHT_tight", "ST_tight using MHT_tight", nBin, STlow, 10500);
   TH1F *stIncHistMHT[multMax-2];
   TH1F *stExcHistMHT[multMax-2];
   TH1F *stIncHistMHT_tight[multMax-2];
@@ -125,21 +125,21 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
   // These use pat::slimmedMETs
   for (int iHist = 0; iHist<multMax-2; ++iHist) {
     sprintf(histTitle, "stInc%02dHist", mult);
-    stIncHist[iHist] = new TH1F(histTitle, "Inclusive ST", nBin, Stlow, 10500);
+    stIncHist[iHist] = new TH1F(histTitle, "Inclusive ST", nBin, STlow, 10500);
     sprintf(histTitle, "stExc%02dHist", mult);
-    stExcHist[iHist] = new TH1F(histTitle, "Exclusive ST", nBin, Stlow, 10500);
+    stExcHist[iHist] = new TH1F(histTitle, "Exclusive ST", nBin, STlow, 10500);
     sprintf(histTitle, "stInc%02dHist_tight", mult);
-    stIncHist_tight[iHist] = new TH1F(histTitle, "Inclusive ST_tight", nBin, Stlow, 10500);
+    stIncHist_tight[iHist] = new TH1F(histTitle, "Inclusive ST_tight", nBin, STlow, 10500);
     sprintf(histTitle, "stExc%02dHist_tight", mult);
-    stExcHist_tight[iHist] = new TH1F(histTitle, "Exclusive ST_tight", nBin, Stlow, 10500);
+    stExcHist_tight[iHist] = new TH1F(histTitle, "Exclusive ST_tight", nBin, STlow, 10500);
     sprintf(histTitle, "stInc%02dHistMHT", mult);
-    stIncHistMHT[iHist] = new TH1F(histTitle, "Inclusive ST using MHT", nBin, Stlow, 10500);
+    stIncHistMHT[iHist] = new TH1F(histTitle, "Inclusive ST using MHT", nBin, STlow, 10500);
     sprintf(histTitle, "stExc%02dHistMHT", mult);
-    stExcHistMHT[iHist] = new TH1F(histTitle, "Exclusive ST using MHT", nBin, Stlow, 10500);
+    stExcHistMHT[iHist] = new TH1F(histTitle, "Exclusive ST using MHT", nBin, STlow, 10500);
     sprintf(histTitle, "stInc%02dHistMHT_tight", mult);
-    stIncHistMHT_tight[iHist] = new TH1F(histTitle, "Inclusive ST_tight using MHT_tight", nBin, Stlow, 10500);
+    stIncHistMHT_tight[iHist] = new TH1F(histTitle, "Inclusive ST_tight using MHT_tight", nBin, STlow, 10500);
     sprintf(histTitle, "stExc%02dHistMHT_tight", mult);
-    stExcHistMHT_tight[iHist] = new TH1F(histTitle, "Exclusive ST_tight using MHT_tight", nBin, Stlow, 10500);
+    stExcHistMHT_tight[iHist] = new TH1F(histTitle, "Exclusive ST_tight using MHT_tight", nBin, STlow, 10500);
     ++mult;
   }
 
