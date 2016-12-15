@@ -2,11 +2,15 @@ import os
 import glob
 
 #Topdir="/mnt/hadoop/store/user/johakala/BlackMax/"
-Topdir="/mnt/hadoop/store/user/johakala/Charybdis_2/"
+#Topdir="/mnt/hadoop/store/user/johakala/Charybdis_2/"
+Topdir="/mnt/hadoop/store/user/johakala/SBExtraFinal/"
 
 folder_list= os.listdir(Topdir)
 #outdir="SignalFlatTuple/BM_fullsim"
-outdir="SignalFlatTuple/Charybdis"
+#outdir="SignalFlatTuple/Charybdis"
+outdir="./SBCheck"
+
+jobdate="160310"
 
 run  = True
 
@@ -14,8 +18,9 @@ f_list=[]
 merged_list=[]
 missing_list=[]
 for dir in folder_list:
-	flist1= glob.glob("%s%s/*/160309*/*/*.root"%(Topdir,dir))
-	flist2= glob.glob("%s%s/*/160304*/*/*.root"%(Topdir,dir))
+	flist1= glob.glob("%s%s/*/%s*/*/*.root"%(Topdir,dir,jobdate))
+	#flist2= glob.glob("%s%s/*/160304*/*/*.root"%(Topdir,dir))
+	flist2= glob.glob("%s%s/*/160310*/*/*/*.root"%(Topdir,dir))
 	if len(flist1)>=2:
 		merged = False
 		MergedName=""
@@ -31,11 +36,20 @@ for dir in folder_list:
 				cmd_tail += f+" "
 			key = flist1[0].split("/")[7]
 			BH  = key.split("_")[1]	
-			MD   = "MD%s"%key.split("_")[2].replace("MD-","")
-			MBH  = "MBH%s"%key.split("_")[3].replace("MBH-","")
-			n    = "n%s"%key.split("_")[4].replace("n-","")
-			outname ="Charybdis_%s_BM_%s_%s_%s_NTuple.root" %(BH,MD,MBH,n)
+			#MD   = "MD%s"%key.split("_")[2].replace("MD-","")
+			#MBH  = "MBH%s"%key.split("_")[3].replace("MBH-","")
+			#n    = "n%s"%key.split("_")[4].replace("n-","")
+			sbextra = key.split("_")[2]
+			if sbextra == "EXTRA4":
+				MD ="MD2380"
+			if sbextra == "EXTRA3":
+				MD ="MD1890"
+			MBH  = "MBH%s"%key.split("_")[3]
+			n    = "n%s"%key.split("_")[4]
 
+			#outname ="Charybdis_%s_BM_%s_%s_%s_NTuple.root" %(BH,MD,MBH,n)
+			outname ="BlackMaxLHArecord_SB_%s_%s_%s_NTuple.root" %(MD,MBH,n)
+			#BlackMaxLHArecord_SB_MD1490_MBH5000_n4_FlatTuple.root
 			cmd_head = "hadd -f0 ./mergedTuple/%s "%(outname)
 			cmd = cmd_head+ cmd_tail
 			print "Merging output files..."
@@ -63,12 +77,21 @@ for dir in folder_list:
 for f in f_list:
 	#print f
 	key = f.split("/")[7]
-	BH  = key.split("_")[1]	
-	MD   = "MD%s"%key.split("_")[2].replace("MD-","")
-	MBH  = "MBH%s"%key.split("_")[3].replace("MBH-","")
-	n    = "n%s"%key.split("_")[4].replace("n-","")
-	outname ="%s/Charybdis_%s_BM_%s_%s_%s_FlatTuple.root" %(outdir,BH,MD,MBH,n)
-	
+#	BH  = key.split("_")[1]	
+#	MD   = "MD%s"%key.split("_")[2].replace("MD-","")
+#	MBH  = "MBH%s"%key.split("_")[3].replace("MBH-","")
+#	n    = "n%s"%key.split("_")[4].replace("n-","")
+#	outname ="%s/Charybdis_%s_BM_%s_%s_%s_FlatTuple.root" %(outdir,BH,MD,MBH,n)
+
+	sbextra = key.split("_")[2]
+	if sbextra == "EXTRA4":
+		MD ="MD2380"
+	if sbextra == "EXTRA3":
+		MD ="MD1890"
+	MBH  = "%s"%key.split("_")[3]
+	n    = "%s"%key.split("_")[4]
+	outname ="%s/BlackMaxLHArecord_SB_%s_%s_%s_FlatTuple.root" %(outdir,MD,MBH,n)
+
 	print "Working on %s now ... "%outname
 	#print "root -l -q 'BHflatTuplizer.cc+(\"%s\",\"%s\",\"empty.txt\")'"% (f, outname)
 	cmd="root -l -q 'BHflatTuplizer.cc+(\"%s\",\"%s\",\"empty.txt\")'"% (f, outname)
