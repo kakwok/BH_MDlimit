@@ -24,10 +24,10 @@ std::map<unsigned, std::set<unsigned> > readEventList(char const* _fileName);
 
 void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string metListFilename) {
   std::map<unsigned, std::set<unsigned> > list = readEventList(metListFilename.c_str());
-  bool isData        = false  ;
+  bool isData        = true ;
   bool debugFlag     = false ;
   int  eventsToDump  = 25    ;  // if debugFlag is true, then stop once the number of dumped events reaches eventsToDump
-  bool dumpBigEvents = false  ;
+  bool dumpBigEvents = true  ;
   bool dumpIsoInfo   = false ;
   int  nDumpedEvents = 0     ;
   bool useMETcut     = false ;
@@ -115,8 +115,8 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
   TH1F *stExcHist[multMax-2];
   TH1F *stIncHist_tight[multMax-2];
   TH1F *stExcHist_tight[multMax-2];
-  TH1F stHistMHT = TH1F("stHistMHT", "ST using MHT", nBin, Stlow, 10500);
-  TH1F stHistMHT_tight = TH1F("stHistMHT_tight", "ST_tight using MHT_tight", nBin, Stlow, 10500);
+  TH1F stHistMHT = TH1F("stHistMHT", "ST using MHT", nBin, STlow, 10500);
+  TH1F stHistMHT_tight = TH1F("stHistMHT_tight", "ST_tight using MHT_tight", nBin, STlow, 10500);
   TH1F *stIncHistMHT[multMax-2];
   TH1F *stExcHistMHT[multMax-2];
   TH1F *stIncHistMHT_tight[multMax-2];
@@ -125,21 +125,21 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
   // These use pat::slimmedMETs
   for (int iHist = 0; iHist<multMax-2; ++iHist) {
     sprintf(histTitle, "stInc%02dHist", mult);
-    stIncHist[iHist] = new TH1F(histTitle, "Inclusive ST", nBin, Stlow, 10500);
+    stIncHist[iHist] = new TH1F(histTitle, "Inclusive ST", nBin, STlow, 10500);
     sprintf(histTitle, "stExc%02dHist", mult);
-    stExcHist[iHist] = new TH1F(histTitle, "Exclusive ST", nBin, Stlow, 10500);
+    stExcHist[iHist] = new TH1F(histTitle, "Exclusive ST", nBin, STlow, 10500);
     sprintf(histTitle, "stInc%02dHist_tight", mult);
-    stIncHist_tight[iHist] = new TH1F(histTitle, "Inclusive ST_tight", nBin, Stlow, 10500);
+    stIncHist_tight[iHist] = new TH1F(histTitle, "Inclusive ST_tight", nBin, STlow, 10500);
     sprintf(histTitle, "stExc%02dHist_tight", mult);
-    stExcHist_tight[iHist] = new TH1F(histTitle, "Exclusive ST_tight", nBin, Stlow, 10500);
+    stExcHist_tight[iHist] = new TH1F(histTitle, "Exclusive ST_tight", nBin, STlow, 10500);
     sprintf(histTitle, "stInc%02dHistMHT", mult);
-    stIncHistMHT[iHist] = new TH1F(histTitle, "Inclusive ST using MHT", nBin, Stlow, 10500);
+    stIncHistMHT[iHist] = new TH1F(histTitle, "Inclusive ST using MHT", nBin, STlow, 10500);
     sprintf(histTitle, "stExc%02dHistMHT", mult);
-    stExcHistMHT[iHist] = new TH1F(histTitle, "Exclusive ST using MHT", nBin, Stlow, 10500);
+    stExcHistMHT[iHist] = new TH1F(histTitle, "Exclusive ST using MHT", nBin, STlow, 10500);
     sprintf(histTitle, "stInc%02dHistMHT_tight", mult);
-    stIncHistMHT_tight[iHist] = new TH1F(histTitle, "Inclusive ST_tight using MHT_tight", nBin, Stlow, 10500);
+    stIncHistMHT_tight[iHist] = new TH1F(histTitle, "Inclusive ST_tight using MHT_tight", nBin, STlow, 10500);
     sprintf(histTitle, "stExc%02dHistMHT_tight", mult);
-    stExcHistMHT_tight[iHist] = new TH1F(histTitle, "Exclusive ST_tight using MHT_tight", nBin, Stlow, 10500);
+    stExcHistMHT_tight[iHist] = new TH1F(histTitle, "Exclusive ST_tight using MHT_tight", nBin, STlow, 10500);
     ++mult;
   }
 
@@ -176,6 +176,7 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
   Bool_t     passed_globalTightHalo2016Filter ;
   Bool_t     passed_goodVertices       ;
   Bool_t     passed_eeBadScFilter      ;
+  Bool_t     passed_EcalDeadCellTriggerPrimitiveFilter;
   Bool_t     passed_filterbadChCandidate;
   Bool_t     passed_filterbadPFMuon;
   int        runno                     ;
@@ -219,6 +220,7 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
   TBranch  *b_passed_globalTightHalo2016Filter ;
   TBranch  *b_passed_goodVertices       ;
   TBranch  *b_passed_eeBadScFilter      ;
+  TBranch  *b_passed_EcalDeadCellTriggerPrimitiveFilter;   
   TBranch  *b_passed_filterbadChCandidate;   
   TBranch  *b_passed_filterbadPFMuon;   
   TBranch  *b_JetEt                     ;
@@ -276,6 +278,7 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
   chain.SetBranchAddress( "passed_globalTightHalo2016Filter" ,  &passed_globalTightHalo2016Filter ,  &b_passed_globalTightHalo2016Filter );
   chain.SetBranchAddress( "passed_goodVertices"       ,  &passed_goodVertices       ,  &b_passed_goodVertices       );
   chain.SetBranchAddress( "passed_eeBadScFilter"      ,  &passed_eeBadScFilter      ,  &b_passed_eeBadScFilter      );
+  chain.SetBranchAddress( "passed_EcalDeadCellTriggerPrimitiveFilter"      ,  &passed_EcalDeadCellTriggerPrimitiveFilter      ,  &b_passed_EcalDeadCellTriggerPrimitiveFilter      );
   chain.SetBranchAddress( "passed_filterbadChCandidate"      ,  &passed_filterbadChCandidate      ,  &b_passed_filterbadChCandidate      );
   chain.SetBranchAddress( "passed_filterbadPFMuon"      ,  &passed_filterbadPFMuon      ,  &b_passed_filterbadPFMuon      );
   chain.SetBranchAddress( "runno"                     ,  &runno                     ,  &b_runno                     );
@@ -319,7 +322,7 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
   bool passMETfilterList = true;
   // loop over all events
   for (int iEvent = 0; iEvent < nEvents; ++iEvent) {
-    if (iEvent%50000==0) {
+    if (iEvent%100000==0) {
       cout << std::fixed << std::setw(3) << std::setprecision(1) << (float(iEvent)/float(nEvents))*100 << "% done: Scanned " << iEvent << " events." << endl;
     }
 
@@ -349,6 +352,7 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
 		|| !passed_goodVertices 
 		|| !passed_eeBadScFilter  
 		|| !passed_filterbadChCandidate  
+		|| !passed_EcalDeadCellTriggerPrimitiveFilter  
 		|| !passed_filterbadPFMuon  
 	   ) ) continue;
 
