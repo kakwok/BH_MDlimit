@@ -31,8 +31,10 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
   bool dumpIsoInfo   = false ;
   int  nDumpedEvents = 0     ;
   bool useMETcut     = false ;
-  int  nBin	     = 100   ; // 100 for 100 GeV bin, 1000 for 10 GeV bin in ST histograms	
-  int  STlow         = 0     ;// Lower bound of ST histogram: 500 GeV or 0 GeV
+  int  nBin	     = 130   ; // 100 for 100 GeV bin, 1000 for 10 GeV bin in ST histograms	
+  int  STlow         = 0     ; // Lower bound of ST histogram: 500 GeV or 0 GeV
+  int  STup          = 13000 ; // Upper bound of ST histogram
+  double PtCut       = 75.0  ; // Lower Cut for Jet 
 
 
   // define output textfile
@@ -107,16 +109,16 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
   TH1F PhotonJetoverlapdR4     = TH1F("PhotonJetoverlapdR4"     ,  "PhotonJetoverlapdR4"     ,  300,   0., .3);
 
   // loop to create ST histograms for inclusive and exclusive multiplicities from 2 up to multMax
-  TH1F stHist = TH1F("stHist", "ST", nBin, STlow, 10500);
-  TH1F stHist_tight = TH1F("stHist_tight", "ST_tight", nBin, STlow, 10500);
+  TH1F stHist = TH1F("stHist", "ST", nBin, STlow, STup);
+  TH1F stHist_tight = TH1F("stHist_tight", "ST_tight", nBin, STlow, STup);
   int mult=2;
   int multMax = 12;
   TH1F *stIncHist[multMax-2];
   TH1F *stExcHist[multMax-2];
   TH1F *stIncHist_tight[multMax-2];
   TH1F *stExcHist_tight[multMax-2];
-  TH1F stHistMHT = TH1F("stHistMHT", "ST using MHT", nBin, STlow, 10500);
-  TH1F stHistMHT_tight = TH1F("stHistMHT_tight", "ST_tight using MHT_tight", nBin, STlow, 10500);
+  TH1F stHistMHT = TH1F("stHistMHT", "ST using MHT", nBin, STlow, STup);
+  TH1F stHistMHT_tight = TH1F("stHistMHT_tight", "ST_tight using MHT_tight", nBin, STlow, STup);
   TH1F *stIncHistMHT[multMax-2];
   TH1F *stExcHistMHT[multMax-2];
   TH1F *stIncHistMHT_tight[multMax-2];
@@ -125,21 +127,21 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
   // These use pat::slimmedMETs
   for (int iHist = 0; iHist<multMax-2; ++iHist) {
     sprintf(histTitle, "stInc%02dHist", mult);
-    stIncHist[iHist] = new TH1F(histTitle, "Inclusive ST", nBin, STlow, 10500);
+    stIncHist[iHist] = new TH1F(histTitle, "Inclusive ST", nBin, STlow, STup);
     sprintf(histTitle, "stExc%02dHist", mult);
-    stExcHist[iHist] = new TH1F(histTitle, "Exclusive ST", nBin, STlow, 10500);
+    stExcHist[iHist] = new TH1F(histTitle, "Exclusive ST", nBin, STlow, STup);
     sprintf(histTitle, "stInc%02dHist_tight", mult);
-    stIncHist_tight[iHist] = new TH1F(histTitle, "Inclusive ST_tight", nBin, STlow, 10500);
+    stIncHist_tight[iHist] = new TH1F(histTitle, "Inclusive ST_tight", nBin, STlow, STup);
     sprintf(histTitle, "stExc%02dHist_tight", mult);
-    stExcHist_tight[iHist] = new TH1F(histTitle, "Exclusive ST_tight", nBin, STlow, 10500);
+    stExcHist_tight[iHist] = new TH1F(histTitle, "Exclusive ST_tight", nBin, STlow, STup);
     sprintf(histTitle, "stInc%02dHistMHT", mult);
-    stIncHistMHT[iHist] = new TH1F(histTitle, "Inclusive ST using MHT", nBin, STlow, 10500);
+    stIncHistMHT[iHist] = new TH1F(histTitle, "Inclusive ST using MHT", nBin, STlow, STup);
     sprintf(histTitle, "stExc%02dHistMHT", mult);
-    stExcHistMHT[iHist] = new TH1F(histTitle, "Exclusive ST using MHT", nBin, STlow, 10500);
+    stExcHistMHT[iHist] = new TH1F(histTitle, "Exclusive ST using MHT", nBin, STlow, STup);
     sprintf(histTitle, "stInc%02dHistMHT_tight", mult);
-    stIncHistMHT_tight[iHist] = new TH1F(histTitle, "Inclusive ST_tight using MHT_tight", nBin, STlow, 10500);
+    stIncHistMHT_tight[iHist] = new TH1F(histTitle, "Inclusive ST_tight using MHT_tight", nBin, STlow, STup);
     sprintf(histTitle, "stExc%02dHistMHT_tight", mult);
-    stExcHistMHT_tight[iHist] = new TH1F(histTitle, "Exclusive ST_tight using MHT_tight", nBin, STlow, 10500);
+    stExcHistMHT_tight[iHist] = new TH1F(histTitle, "Exclusive ST_tight using MHT_tight", nBin, STlow, STup);
     ++mult;
   }
 
@@ -389,13 +391,13 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
           if (fabs(JetEta[iJet])<=3 && JetNeutHadFrac[iJet]<0.9 && JetNeutEMFrac[iJet]<0.9 && JetNConstituents[iJet]>1 && JetMuFrac[iJet]<0.8) {
             isTightJet=true;
             if (fabs(JetEta[iJet])<=2.4) {
-              if ( JetNChgConstituents[iJet] > 0 && JetChgHadFrac[iJet] > 0 && JetChgHadFrac[iJet]>0) isTightJet=true;
+              if ( JetNChgConstituents[iJet] > 0 && JetChgHadFrac[iJet] > 0 && JetChgEMFrac[iJet]>0) isTightJet=true;
               else isTightJet=false;
             }
           }
           if (fabs(JetEta[iJet])>3 && JetNeutEMFrac[iJet] < 0.9 && JetNNeutConstituents[iJet] > 10) isTightJet=true;
           TightJets[iJet]=isTightJet;
-          if (JetEt[iJet]>50.) {
+          if (JetEt[iJet]>PtCut) {
             for (int iMuon = 0; iMuon < 25; ++iMuon ) {
               if (MuEt[iMuon]>50 && MuPFdBiso[iMuon]<0.15) {
                 eventHasMuon = true;
