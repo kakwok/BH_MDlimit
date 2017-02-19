@@ -65,10 +65,25 @@ def getXsec(PathAndFile , lookupfiles, modelClass):
 
 		if(modelClass=="SB"):
 			#format: BlackMaxLHArecord_SB_MD1640_MBH9500_n6_FlatTuple.root
-			Model=signal.split("_")[1]
-			MD   =signal.split("_")[2]
-			MBH  =signal.split("_")[3]
-			n    =signal.split("_")[4]
+			#StringBall_MD11030_MBH5000_MS2000_gs05_n6_blackmax_FlatTuple.root 
+			#StringBall_MD11030_MBH5000_MS2000_gs05_n6_charybdis_FlatTuple.root 
+			Model="SB"
+			if "BlackMaxLHArecord" in signal:
+				MD   =signal.split("_")[2]
+				MBH  =signal.split("_")[3]
+				n    =signal.split("_")[4]
+				if (MD=="MD1640"):
+					MD="MD7630"
+				if (MD=="MD1490"):
+					MD="MD6890"
+				if (MD=="MD1890"):
+					MD="MD8750"
+				if (MD=="MD2380"):
+					MD="MD11030"
+			if "StringBall" in signal:
+				MD   =signal.split("_")[1]
+				MBH  =signal.split("_")[2]
+				n    =signal.split("_")[5]
 			Found = False
 			masspoint.append(Model)
 			masspoint.append(float(MD.replace("MD","")))
@@ -78,7 +93,8 @@ def getXsec(PathAndFile , lookupfiles, modelClass):
                         print "Looking for x sec of model=%s MD=%s, MBH=%s, n=%s" % (Model,MD,MBH,n)
                         File = open(lookupfiles,"r")
 			for line in File:
-				# format: StringBall_MD1640_MBH6500_MS1100_gs02_n2_13TeV_TuneCUETP8M1-blackmax    1.02E-01
+				# old format: StringBall_MD1640_MBH6500_MS1100_gs02_n2_13TeV_TuneCUETP8M1-blackmax    1.02E-01
+				# new format: StringBall_MD11030_MBH5000_MS2000_gs05_n6_blackmax                  7.0913174e-01
 				key = line.split("\t")[0]
 				xsec= line.split("\t")[1]
 				if (key.split("_")[1]==MD and key.split("_")[2]==MBH and key.split("_")[5]==n ):
