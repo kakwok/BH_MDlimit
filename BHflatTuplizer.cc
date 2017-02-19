@@ -24,7 +24,8 @@ std::map<unsigned, std::set<unsigned> > readEventList(char const* _fileName);
 
 void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string metListFilename) {
   std::map<unsigned, std::set<unsigned> > list = readEventList(metListFilename.c_str());
-  bool isData        = true ;
+  bool isData        = true;
+  bool is2016H       = true;    // Switch to recover 2016H trigger inefficiency
   bool debugFlag     = false ;
   int  eventsToDump  = 25    ;  // if debugFlag is true, then stop once the number of dumped events reaches eventsToDump
   bool dumpBigEvents = true  ;
@@ -34,7 +35,7 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
   int  nBin	     = 130   ; // 100 for 100 GeV bin, 1000 for 10 GeV bin in ST histograms	
   int  STlow         = 0     ; // Lower bound of ST histogram: 500 GeV or 0 GeV
   int  STup          = 13000 ; // Upper bound of ST histogram
-  double PtCut       = 75.0  ; // Lower Cut for Jet 
+  double PtCut       = 50.0  ; // Lower Cut for Jet 
 
 
   // define output textfile
@@ -175,6 +176,8 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
   // variables accessed from the tree
   //TODO
   Bool_t     firedHLT_PFHT800            ;
+  Bool_t     firedHLT_PFHT475            ;
+  Bool_t     firedHLT_PFJet450            ;
   Bool_t     passed_globalTightHalo2016Filter ;
   Bool_t     passed_goodVertices       ;
   Bool_t     passed_eeBadScFilter      ;
@@ -219,6 +222,8 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
   // tree branches
   //TODO
   TBranch  *b_firedHLT_PFHT800          ;
+  TBranch  *b_firedHLT_PFHT475          ;
+  TBranch  *b_firedHLT_PFJet450         ;
   TBranch  *b_passed_globalTightHalo2016Filter ;
   TBranch  *b_passed_goodVertices       ;
   TBranch  *b_passed_eeBadScFilter      ;
@@ -277,6 +282,10 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
   // set all branch addresses
   // TODO
   chain.SetBranchAddress( "firedHLT_PFHT800"          ,  &firedHLT_PFHT800          ,  &b_firedHLT_PFHT800       );
+  chain.SetBranchAddress( "firedHLT_PFHT475"          ,  &firedHLT_PFHT475          ,  &b_firedHLT_PFHT475       );
+  // FIXME
+  chain.SetBranchAddress( "firedHLT_PFJet450          ",  &firedHLT_PFJet450         ,  &b_firedHLT_PFJet450      );
+  //chain.SetBranchAddress( "firedHLT_PFJet450"         ,  &firedHLT_PFJet450         ,  &b_firedHLT_PFJet450      );
   chain.SetBranchAddress( "passed_globalTightHalo2016Filter" ,  &passed_globalTightHalo2016Filter ,  &b_passed_globalTightHalo2016Filter );
   chain.SetBranchAddress( "passed_goodVertices"       ,  &passed_goodVertices       ,  &b_passed_goodVertices       );
   chain.SetBranchAddress( "passed_eeBadScFilter"      ,  &passed_eeBadScFilter      ,  &b_passed_eeBadScFilter      );
@@ -348,7 +357,19 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
     chain.GetEntry(iEvent);
     // apply trigger and filter requirements
     //TODO
-    if ( isData &&  
+    if ( is2016H ){
+      if ( isData &&  
+       ( !(firedHLT_PFHT800  || firedHLT_PFJet450)  
+             || !passed_globalTightHalo2016Filter 
+             || !passed_goodVertices 
+             || !passed_eeBadScFilter  
+             || !passed_filterbadChCandidate  
+             || !passed_EcalDeadCellTriggerPrimitiveFilter  
+             || !passed_filterbadPFMuon  
+        ) ) continue;
+    }
+    else{
+      if ( isData &&  
 	  ( !firedHLT_PFHT800    
 		|| !passed_globalTightHalo2016Filter 
 		|| !passed_goodVertices 
@@ -356,7 +377,8 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
 		|| !passed_filterbadChCandidate  
 		|| !passed_EcalDeadCellTriggerPrimitiveFilter  
 		|| !passed_filterbadPFMuon  
-	   ) ) continue;
+       ) ) continue;
+     }
 
 	h_mBH.Fill(mBH);
         // use Yutaro's method for applying the event filter
@@ -388,13 +410,17 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
           JetMuonEt     =0;
           JetElectronEt =0;
           JetPhotonEt   =0;
-          if (fabs(JetEta[iJet])<=3 && JetNeutHadFrac[iJet]<0.9 && JetNeutEMFrac[iJet]<0.9 && JetNConstituents[iJet]>1 && JetMuFrac[iJet]<0.8) {
+          //if (fabs(JetEta[iJet])<=3 && JetNeutHadFrac[iJet]<0.9 && JetNeutEMFrac[iJet]<0.9 && JetNConstituents[iJet]>1 && JetMuFrac[iJet]<0.8) {
+          if (fabs(JetEta[iJet])<=2.7 && JetNeutHadFrac[iJet]<0.9 && JetNeutEMFrac[iJet]<0.9 && JetNConstituents[iJet]>1 && JetMuFrac[iJet]<0.8) {
             isTightJet=true;
             if (fabs(JetEta[iJet])<=2.4) {
-              if ( JetNChgConstituents[iJet] > 0 && JetChgHadFrac[iJet] > 0 && JetChgEMFrac[iJet]>0) isTightJet=true;
+              if ( JetNChgConstituents[iJet] > 0 && JetChgHadFrac[iJet] > 0 && JetChgEMFrac[iJet]<0.9) isTightJet=true;
               else isTightJet=false;
             }
           }
+          if (fabs(JetEta[iJet])>2.7 && fabs(JetEta[iJet])<=3.0){
+              if ( JetNNeutConstituents[iJet] > 2 && JetNeutHadFrac[iJet] < 0.98 && JetNeutEMFrac[iJet]>0.01) isTightJet=true;
+	  }
           if (fabs(JetEta[iJet])>3 && JetNeutEMFrac[iJet] < 0.9 && JetNNeutConstituents[iJet] > 10) isTightJet=true;
           TightJets[iJet]=isTightJet;
           if (JetEt[iJet]>PtCut) {
@@ -783,7 +809,9 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
           outTextFile << messageBuffer;
           for (int j=0; j<25; ++j) {
             if(JetEt[j]>0.000) {
-              sprintf(messageBuffer, "    Jet %d has TightJet=%d Et=%f, Px=%f, Py=%f, Eta=%f, Phi=%f\n", j, TightJets[j],  JetEt[j], JetPx[j], JetPy[j], JetEta[j], JetPhi[j]);
+              sprintf(messageBuffer, "    Jet %d has TightJet=%d Et=%f, Px=%f, Py=%f, Eta=%f, Phi=%f ", j, TightJets[j],  JetEt[j], JetPx[j], JetPy[j], JetEta[j], JetPhi[j]);
+              outTextFile << messageBuffer;
+              sprintf(messageBuffer, "  NHF=%f, NEMF=%f, CHF=%f,  CEMF=%f  MuF=%f\n", JetNeutHadFrac[j], JetNeutEMFrac[j],JetChgHadFrac[j],JetChgEMFrac[j],JetMuFrac[j]);
               outTextFile << messageBuffer;
             }
             if (debugFlag) cout  << messageBuffer;
