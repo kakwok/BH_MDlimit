@@ -22,10 +22,14 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
 float dR(float eta1, float phi1, float eta2, float phi2);
 std::map<unsigned, std::set<unsigned> > readEventList(char const* _fileName);
 
-void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string metListFilename) {
+// inFilename    = NTuple input
+// outFilename   = output root
+//  metListFilename = txt of un-filtered MET events
+//  PtCut        = Lower Cut for Jet 
+//  is2016H      = Switch to recover 2016H trigger inefficiency
+void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string metListFilename, bool is2016H, double PtCut) {
   std::map<unsigned, std::set<unsigned> > list = readEventList(metListFilename.c_str());
   bool isData        = true;
-  bool is2016H       = true;    // Switch to recover 2016H trigger inefficiency
   bool debugFlag     = false ;
   int  eventsToDump  = 25    ;  // if debugFlag is true, then stop once the number of dumped events reaches eventsToDump
   bool dumpBigEvents = true  ;
@@ -35,7 +39,6 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
   int  nBin	     = 130   ; // 100 for 100 GeV bin, 1000 for 10 GeV bin in ST histograms	
   int  STlow         = 0     ; // Lower bound of ST histogram: 500 GeV or 0 GeV
   int  STup          = 13000 ; // Upper bound of ST histogram
-  double PtCut       = 50.0  ; // Lower Cut for Jet 
 
 
   // define output textfile
@@ -47,9 +50,12 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
   // Basic quantities
   TH1F Ngen     = TH1F("Ngen" ,"Ngen" ,1,0,1);
   TH1F NJets    = TH1F("NJets","NJets",20,0,20);
+  TH1F h_NPV    = TH1F("NPV","NPV",100,0,100);
+  TH1F NJetPhElMu   = TH1F("NJetPhElMu","NJetPhElMu",20,0,20);
   TH1F h_mBH    = TH1F("mBH"  ,"mBH"  ,130,0,13000);
   TH1F MET      = TH1F("MET"  ,"MET"  ,130,0,13000);
   TH1F OurMET   = TH1F("OurMET"  ,"OurMET"  ,130,0,13000);
+  TProfile NPV_multi = TProfile("NPV_multi","NPV_multi",10,2,12,"s"); 
 
   TH2F METvsMHT                            = TH2F("METvsMHT"                            ,  "METvsMHT"                        ,  1000,  0.,  20000.,  1000,  0.,  20000.);
   TH2F METvsMHTinc2                        = TH2F("METvsMHTinc2"                        ,  "METvsMHTinc2"                    ,  1000,  0.,  20000.,  1000,  0.,  20000.);
@@ -218,6 +224,7 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
   float      MuPFdBiso[25]             ;
   float      Met                       ;
   float      mBH                       ;
+  int        NPV		       ;
 
   // tree branches
   //TODO
@@ -264,6 +271,7 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
   TBranch  *b_evtno                     ;
   TBranch  *b_lumiblock                 ;
   TBranch  *b_mBH 	                ;
+  TBranch  *b_NPV 	                ;
 
   //create a chain by looping over the input filename
   TChain chain("bhana/t");
@@ -326,6 +334,7 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
   chain.SetBranchAddress( "MuPFdBiso"                 , MuPFdBiso                   ,  &b_MuPFdBiso                 );
   chain.SetBranchAddress( "Met"                       ,  &Met                       ,  &b_Met                       );
   chain.SetBranchAddress( "mBH"                       ,  &mBH                       ,  &b_mBH                       );
+  chain.SetBranchAddress( "NPV"                       ,  &NPV                       ,  &b_NPV                       );
 
   const int nEvents = chain.GetEntries();
   cout << "Number of events in chain is: " << nEvents << endl;
@@ -410,7 +419,7 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
           JetMuonEt     =0;
           JetElectronEt =0;
           JetPhotonEt   =0;
-          //if (fabs(JetEta[iJet])<=3 && JetNeutHadFrac[iJet]<0.9 && JetNeutEMFrac[iJet]<0.9 && JetNConstituents[iJet]>1 && JetMuFrac[iJet]<0.8) {
+          //if (fabs(JetEta[iJet])<=3 && JetNeutHadFrac[iJet]<0.9 && JetNeutEMFrac[iJet]<0.9 && JetNConstituents[iJet]>1 && JetMuFrac[iJet]<0.8) 
           if (fabs(JetEta[iJet])<=2.7 && JetNeutHadFrac[iJet]<0.9 && JetNeutEMFrac[iJet]<0.9 && JetNConstituents[iJet]>1 && JetMuFrac[iJet]<0.8) {
             isTightJet=true;
             if (fabs(JetEta[iJet])<=2.4) {
@@ -710,6 +719,9 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
             else break;
           }
         }
+	h_NPV.Fill(NPV);
+	NJetPhElMu.Fill(multiplicity);
+	NPV_multi.Fill(multiplicity,NPV);
 
 
         //debug info and big ST printing
@@ -915,9 +927,12 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
   TFile* outRootFile = new TFile(outFilename.c_str(), "RECREATE");
   Ngen.Write();
   NJets.Write();
+  NJetPhElMu.Write();
+  h_NPV.Write();
   h_mBH.Write();
   MET.Write();
   OurMET.Write();
+  NPV_multi.Write();
   outRootFile->cd();
   outRootFile->mkdir("ST");
   outRootFile->mkdir("ST_tight");
