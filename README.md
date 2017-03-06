@@ -1,5 +1,6 @@
 # BH_MDlimit
 ## 1) Generate the signal flat Tuple
+**On Lxplus**  
 Input: a eos path like `/store/group/phys_exotica/BH_RunII/BlackMax_NTuple/`  
 Change the `$DIR` in the shell script, prepare a directory called `"SignalFlatTuple/ModelClass"`
 Usage:  
@@ -10,6 +11,10 @@ cd SignalFlatTuple
 mkdir ModelClass
 cd ../
 sh GenSignalFlatTuple.sh
+```
+**On brux6**, please modify and use
+```
+python GenSignalFlatTuple.py
 ```
 
 ## 2) Find the Optimal (Stmin,Nmin) points
