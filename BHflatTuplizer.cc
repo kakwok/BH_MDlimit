@@ -25,7 +25,7 @@ std::map<unsigned, std::set<unsigned> > readEventList(char const* _fileName);
 // inFilename    = NTuple input
 // outFilename   = output root
 //  metListFilename = txt of un-filtered MET events
-//  PtCut        = Lower Cut for Jet 
+//  PtCut        = Lower PtCut for Jet/Electron/Photon/MET
 //  is2016H      = Switch to recover 2016H trigger inefficiency
 void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string metListFilename, bool is2016H, double PtCut) {
   std::map<unsigned, std::set<unsigned> > list = readEventList(metListFilename.c_str());
@@ -166,6 +166,7 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
   float ST_tight         = 0.            ;
   float STMHTnoMET_tight = 0.            ;
   int multiplicity_tight = 0             ;
+  bool isLeadingJetTight = false          ;
   bool passIso_tight     = true          ;
   bool passMetCut        = true          ;
   bool passMetCut_tight  = true          ;
@@ -190,6 +191,7 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
   Bool_t     passed_EcalDeadCellTriggerPrimitiveFilter;
   Bool_t     passed_filterbadChCandidate;
   Bool_t     passed_filterbadPFMuon;
+  Bool_t     passed_GiovanniFilter;
   int        runno                     ;
   long long  evtno                     ;
   int        lumiblock                 ;
@@ -237,6 +239,7 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
   TBranch  *b_passed_EcalDeadCellTriggerPrimitiveFilter;   
   TBranch  *b_passed_filterbadChCandidate;   
   TBranch  *b_passed_filterbadPFMuon;   
+  TBranch  *b_passed_GiovanniFilter;   
   TBranch  *b_JetEt                     ;
   TBranch  *b_JetPx                     ;
   TBranch  *b_JetPy                     ;
@@ -291,15 +294,14 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
   // TODO
   chain.SetBranchAddress( "firedHLT_PFHT800"          ,  &firedHLT_PFHT800          ,  &b_firedHLT_PFHT800       );
   chain.SetBranchAddress( "firedHLT_PFHT475"          ,  &firedHLT_PFHT475          ,  &b_firedHLT_PFHT475       );
-  // FIXME
-  chain.SetBranchAddress( "firedHLT_PFJet450          ",  &firedHLT_PFJet450         ,  &b_firedHLT_PFJet450      );
-  //chain.SetBranchAddress( "firedHLT_PFJet450"         ,  &firedHLT_PFJet450         ,  &b_firedHLT_PFJet450      );
+  chain.SetBranchAddress( "firedHLT_PFJet450"         ,  &firedHLT_PFJet450         ,  &b_firedHLT_PFJet450      );
   chain.SetBranchAddress( "passed_globalTightHalo2016Filter" ,  &passed_globalTightHalo2016Filter ,  &b_passed_globalTightHalo2016Filter );
   chain.SetBranchAddress( "passed_goodVertices"       ,  &passed_goodVertices       ,  &b_passed_goodVertices       );
   chain.SetBranchAddress( "passed_eeBadScFilter"      ,  &passed_eeBadScFilter      ,  &b_passed_eeBadScFilter      );
   chain.SetBranchAddress( "passed_EcalDeadCellTriggerPrimitiveFilter"      ,  &passed_EcalDeadCellTriggerPrimitiveFilter      ,  &b_passed_EcalDeadCellTriggerPrimitiveFilter      );
   chain.SetBranchAddress( "passed_filterbadChCandidate"      ,  &passed_filterbadChCandidate      ,  &b_passed_filterbadChCandidate      );
   chain.SetBranchAddress( "passed_filterbadPFMuon"      ,  &passed_filterbadPFMuon      ,  &b_passed_filterbadPFMuon      );
+  chain.SetBranchAddress( "passed_GiovanniFilter"      ,  &passed_GiovanniFilter      ,  &b_passed_GiovanniFilter      );
   chain.SetBranchAddress( "runno"                     ,  &runno                     ,  &b_runno                     );
   chain.SetBranchAddress( "lumiblock"                 ,  &lumiblock                 ,  &b_lumiblock                 );
   chain.SetBranchAddress( "evtno"                     ,  &evtno                     ,  &b_evtno                     );
@@ -375,6 +377,7 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
              || !passed_filterbadChCandidate  
              || !passed_EcalDeadCellTriggerPrimitiveFilter  
              || !passed_filterbadPFMuon  
+             || !passed_GiovanniFilter  
         ) ) continue;
     }
     else{
@@ -386,6 +389,7 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
 		|| !passed_filterbadChCandidate  
 		|| !passed_EcalDeadCellTriggerPrimitiveFilter  
 		|| !passed_filterbadPFMuon  
+		|| !passed_GiovanniFilter  
        ) ) continue;
      }
 
@@ -434,7 +438,7 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
           TightJets[iJet]=isTightJet;
           if (JetEt[iJet]>PtCut) {
             for (int iMuon = 0; iMuon < 25; ++iMuon ) {
-              if (MuEt[iMuon]>50 && MuPFdBiso[iMuon]<0.15) {
+              if (MuEt[iMuon]>PtCut && MuPFdBiso[iMuon]<0.15) {
                 eventHasMuon = true;
                 if (JetEt[iJet] && dR(JetEta[iJet],JetPhi[iJet], MuEta[iMuon], MuPhi[iMuon]) < 0.3) {
                   JetMuonEt+=MuEt[iMuon];
@@ -469,7 +473,7 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
               }
             }
             for (int iElectron = 0; iElectron < 25; ++iElectron ) {
-              if (EleEt[iElectron]>50) {
+              if (EleEt[iElectron]>PtCut) {
                 eventHasElectron = true;
                 if (dR(JetEta[iJet],JetPhi[iJet], EleEta[iElectron], ElePhi[iElectron]) < 0.3) {
                   JetElectronEt+=EleEt[iElectron];
@@ -504,7 +508,7 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
               }
             }
             for (int iPhoton = 0; iPhoton < 25; ++iPhoton ) {
-              if (PhEt[iPhoton]>50) {
+              if (PhEt[iPhoton]>PtCut) {
                 eventHasPhoton = true;
                 if (dR(JetEta[iJet],JetPhi[iJet], PhEta[iPhoton], PhPhi[iPhoton]) < 0.3) {
                   JetPhotonEt+=PhEt[iPhoton];
@@ -561,15 +565,17 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
           }
           else break;
         }
+	isLeadingJetTight = TightJets[0];
+	if (!isLeadingJetTight) continue;
 	NJets.Fill(multiplicity);
         //Electrons
         if (eventHasElectron) {
           for (int iElectron = 0; iElectron < 25; ++iElectron) {
             passIso=true;
             passIso_tight=true;
-            if (EleEt[iElectron]>50.) {
+            if (EleEt[iElectron]>PtCut) {
               for (int iJet = 0; iJet < 25; ++iJet ) {
-                if (JetEt[iJet]>50 && dR(EleEta[iElectron],ElePhi[iElectron], JetEta[iJet], JetPhi[iJet]) < 0.3) {
+                if (JetEt[iJet]>PtCut && dR(EleEta[iElectron],ElePhi[iElectron], JetEta[iJet], JetPhi[iJet]) < 0.3) {
                   if (EleEt[iElectron]<0.7*JetEt[iJet]) {
                     passIso = false;
                     if(TightJets[iJet]) {
@@ -587,7 +593,7 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
 
               // Throw away electron if there's an electron/muon overlap.
               for (int iMuon = 0; iMuon < 25; ++iMuon ) {
-                if (MuEt[iMuon]>50 && MuPFdBiso[iMuon]<0.15 && dR(EleEta[iElectron],ElePhi[iElectron], MuEta[iMuon], MuPhi[iMuon]) < 0.3) {
+                if (MuEt[iMuon]>PtCut && MuPFdBiso[iMuon]<0.15 && dR(EleEta[iElectron],ElePhi[iElectron], MuEta[iMuon], MuPhi[iMuon]) < 0.3) {
                   passIso = false;
                   passIso_tight = false;
                   if (dumpIsoInfo) {
@@ -625,9 +631,9 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
         if (eventHasPhoton) {
           for (int iPhoton = 0; iPhoton < 25; ++iPhoton) {
             passIso=true;
-            if (PhEt[iPhoton]>50.) {
+            if (PhEt[iPhoton]>PtCut) {
               for (int iJet = 0; iJet < 25; ++iJet ) {
-                if (JetEt[iJet]>50 && dR(PhEta[iPhoton],PhPhi[iPhoton], JetEta[iJet], JetPhi[iJet]) < 0.3) {
+                if (JetEt[iJet]>PtCut && dR(PhEta[iPhoton],PhPhi[iPhoton], JetEta[iJet], JetPhi[iJet]) < 0.3) {
                   if (PhEt[iPhoton]<0.5*JetEt[iJet]) {
                     passIso = false;
                     if (TightJets[iJet]) {
@@ -645,7 +651,7 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
 
               // Throw out photon if there's a photon/muon overlap
               for (int iMuon = 0; iMuon < 25; ++iMuon ) {
-                if (MuEt[iMuon]>50 && MuPFdBiso[iMuon]<0.15 && dR(PhEta[iPhoton], PhPhi[iPhoton], MuEta[iMuon], MuPhi[iMuon]) < 0.3) {
+                if (MuEt[iMuon]>PtCut && MuPFdBiso[iMuon]<0.15 && dR(PhEta[iPhoton], PhPhi[iPhoton], MuEta[iMuon], MuPhi[iMuon]) < 0.3) {
                   if (dumpIsoInfo) {
                     sprintf(messageBuffer, "Photon number %d failed isolation with Muon number %d  in run number %d lumi section %d event number %lld\n", iPhoton, iMuon, runno, lumiblock, evtno);
                     outTextFile << messageBuffer;
@@ -659,7 +665,7 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
 
               // Throw out photon if there's a photon/electron overlap
               for (int iElectron = 0; iElectron < 25; ++iElectron ) {
-                if (EleEt[iElectron]>50 && dR(PhEta[iPhoton], PhPhi[iPhoton], EleEta[iElectron], ElePhi[iElectron]) < 0.3) {
+                if (EleEt[iElectron]>PtCut && dR(PhEta[iPhoton], PhPhi[iPhoton], EleEta[iElectron], ElePhi[iElectron]) < 0.3) {
                   if (dumpIsoInfo) {
                     sprintf(messageBuffer, "Photon number %d failed isolation with Electron number %d  in run number %d lumi section %d event number %lld\n", iPhoton, iElectron, runno, lumiblock, evtno);
                     outTextFile << messageBuffer;
@@ -699,7 +705,7 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
           for (int iMuon = 0; iMuon < 25; ++iMuon) {
             passIso=true;
             passIso_tight=true;
-            if (MuEt[iMuon]>50. && MuPFdBiso[iMuon]<0.15) {
+            if (MuEt[iMuon]>PtCut && MuPFdBiso[iMuon]<0.15) {
               if (debugFlag) cout << "    MuEt for muon number " << iMuon << " is: " << MuEt[iMuon] << endl;
               ST += MuEt[iMuon];
               multiplicity+=1;
