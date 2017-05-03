@@ -55,6 +55,8 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
   TH1F h_mBH    = TH1F("mBH"  ,"mBH"  ,130,0,13000);
   TH1F MET      = TH1F("MET"  ,"MET"  ,130,0,13000);
   TH1F OurMET   = TH1F("OurMET"  ,"OurMET"  ,130,0,13000);
+  TH1F JetNHF   = TH1F("JetNHF","JetNHF",1000,0,1);
+  TH1F JetCHF   = TH1F("JetCHF","JetCHF",1000,0,1);
   TProfile NPV_multi = TProfile("NPV_multi","NPV_multi",10,2,12,"s"); 
 
   TH2F METvsMHT                            = TH2F("METvsMHT"                            ,  "METvsMHT"                        ,  1000,  0.,  20000.,  1000,  0.,  20000.);
@@ -175,6 +177,7 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
   bool eventHasPhoton    = false         ;
   bool eventHasElectron  = false         ;
   bool  TightJets[25]                    ;
+  bool  JetIso[25]                       ;
   bool  isTightJet       = false         ;
   float JetMuonEt        = 0.            ;
   float JetElectronEt    = 0.            ;
@@ -191,7 +194,8 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
   Bool_t     passed_EcalDeadCellTriggerPrimitiveFilter;
   Bool_t     passed_filterbadChCandidate;
   Bool_t     passed_filterbadPFMuon;
-  Bool_t     passed_GiovanniFilter;
+  //Bool_t     passed_GiovanniFilter;
+  Bool_t     passed_Dimafilter;
   int        runno                     ;
   long long  evtno                     ;
   int        lumiblock                 ;
@@ -240,6 +244,7 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
   TBranch  *b_passed_filterbadChCandidate;   
   TBranch  *b_passed_filterbadPFMuon;   
   TBranch  *b_passed_GiovanniFilter;   
+  TBranch  *b_passed_Dimafilter;   
   TBranch  *b_JetEt                     ;
   TBranch  *b_JetPx                     ;
   TBranch  *b_JetPy                     ;
@@ -301,7 +306,8 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
   chain.SetBranchAddress( "passed_EcalDeadCellTriggerPrimitiveFilter"      ,  &passed_EcalDeadCellTriggerPrimitiveFilter      ,  &b_passed_EcalDeadCellTriggerPrimitiveFilter      );
   chain.SetBranchAddress( "passed_filterbadChCandidate"      ,  &passed_filterbadChCandidate      ,  &b_passed_filterbadChCandidate      );
   chain.SetBranchAddress( "passed_filterbadPFMuon"      ,  &passed_filterbadPFMuon      ,  &b_passed_filterbadPFMuon      );
-  chain.SetBranchAddress( "passed_GiovanniFilter"      ,  &passed_GiovanniFilter      ,  &b_passed_GiovanniFilter      );
+//  chain.SetBranchAddress( "passed_GiovanniFilter"      ,  &passed_GiovanniFilter      ,  &b_passed_GiovanniFilter      );
+  chain.SetBranchAddress( "passed_Dimafilter"         ,  &passed_Dimafilter         ,  &b_passed_Dimafilter      );
   chain.SetBranchAddress( "runno"                     ,  &runno                     ,  &b_runno                     );
   chain.SetBranchAddress( "lumiblock"                 ,  &lumiblock                 ,  &b_lumiblock                 );
   chain.SetBranchAddress( "evtno"                     ,  &evtno                     ,  &b_evtno                     );
@@ -364,6 +370,7 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
     eventHasPhoton      = false ;
     eventHasElectron    = false ;
     std::fill(std::begin( TightJets ), std::end( TightJets ), false );
+    std::fill(std::begin( JetIso    ), std::end( JetIso    ), true );
 
     chain.GetEntry(iEvent);
     // apply trigger and filter requirements
@@ -377,7 +384,8 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
              || !passed_filterbadChCandidate  
              || !passed_EcalDeadCellTriggerPrimitiveFilter  
              || !passed_filterbadPFMuon  
-             || !passed_GiovanniFilter  
+    //         || !passed_GiovanniFilter  
+             || !passed_Dimafilter
         ) ) continue;
     }
     else{
@@ -389,7 +397,8 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
 		|| !passed_filterbadChCandidate  
 		|| !passed_EcalDeadCellTriggerPrimitiveFilter  
 		|| !passed_filterbadPFMuon  
-		|| !passed_GiovanniFilter  
+	//	|| !passed_GiovanniFilter  
+                || !passed_Dimafilter
        ) ) continue;
      }
 
@@ -424,7 +433,7 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
           JetElectronEt =0;
           JetPhotonEt   =0;
           //if (fabs(JetEta[iJet])<=3 && JetNeutHadFrac[iJet]<0.9 && JetNeutEMFrac[iJet]<0.9 && JetNConstituents[iJet]>1 && JetMuFrac[iJet]<0.8) 
-          if (fabs(JetEta[iJet])<=2.7 && JetNeutHadFrac[iJet]<0.9 && JetNeutEMFrac[iJet]<0.9 && JetNConstituents[iJet]>1 && JetMuFrac[iJet]<0.8) {
+          if (fabs(JetEta[iJet])<=2.7 && JetNeutHadFrac[iJet]<0.9 && JetNeutHadFrac[iJet]>0.001 && JetNeutEMFrac[iJet]<0.9 && JetNConstituents[iJet]>1 && JetMuFrac[iJet]<0.8) {
             isTightJet=true;
             if (fabs(JetEta[iJet])<=2.4) {
               if ( JetNChgConstituents[iJet] > 0 && JetChgHadFrac[iJet] > 0 && JetChgEMFrac[iJet]<0.9) isTightJet=true;
@@ -460,6 +469,7 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
                   }
                   if (JetMuonEt>0.8*JetEt[iJet]) {
                     passIso = false;
+		    JetIso[iJet] = false;
                     if (isTightJet) {
                       passIso_tight=false;
                       if (dumpIsoInfo) {
@@ -495,6 +505,7 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
                   }
                   if (JetElectronEt > 0.7*JetEt[iJet] ) {
                     passIso = false;
+		    JetIso[iJet] = false;
                     if (isTightJet) {
                       passIso_tight=false;
                       if (dumpIsoInfo) {
@@ -530,6 +541,7 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
                   }
                   if (JetPhotonEt>0.5*JetEt[iJet] ) {
                     passIso = false;
+		    JetIso[iJet] = false;
                     if (isTightJet) {
                       passIso_tight=false;
                       if (dumpIsoInfo) {
@@ -565,7 +577,17 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
           }
           else break;
         }
-	isLeadingJetTight = TightJets[0];
+	int iLeadingIsoJet = -1;
+	//Exclude Leading jet that is not isolated.	
+        for (int iJet = 0; iJet < 25; ++iJet) {
+		if(JetIso[iJet]){
+			if(iLeadingIsoJet!=-1) iLeadingIsoJet = iJet;
+			JetNHF.Fill(JetNeutHadFrac[iJet]);
+			JetCHF.Fill(JetChgHadFrac[iJet]);
+		}
+	}
+
+	isLeadingJetTight = TightJets[iLeadingIsoJet];
 	if (!isLeadingJetTight) continue;
 	NJets.Fill(multiplicity);
         //Electrons
@@ -825,6 +847,8 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
           //sprintf(messageBuffer, "In run number %d lumi section %d event number %lld: ST is %f, ST_tight is %f, and multiplicity is %d\n", runno, lumiblock, evtno, ST, ST_tight, multiplicity);
 	  sprintf(messageBuffer, "In run number %d lumi section %d event number %llu: ST is %f, ST_tight is %f, and multiplicity is %d\n", runno, lumiblock, evtno, ST, ST_tight, multiplicity);
           outTextFile << messageBuffer;
+	  sprintf(messageBuffer, "DimaFilter for this event is: %d\n", passed_Dimafilter);
+          outTextFile << messageBuffer;
           for (int j=0; j<25; ++j) {
             if(JetEt[j]>0.000) {
               sprintf(messageBuffer, "    Jet %d has TightJet=%d Et=%f, Px=%f, Py=%f, Eta=%f, Phi=%f ", j, TightJets[j],  JetEt[j], JetPx[j], JetPy[j], JetEta[j], JetPhi[j]);
@@ -939,6 +963,8 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
   MET.Write();
   OurMET.Write();
   NPV_multi.Write();
+  JetNHF.Write();
+  JetCHF.Write();
   outRootFile->cd();
   outRootFile->mkdir("ST");
   outRootFile->mkdir("ST_tight");
