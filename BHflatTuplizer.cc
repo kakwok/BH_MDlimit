@@ -57,8 +57,10 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
   TH1F OurMET   = TH1F("OurMET"  ,"OurMET"  ,130,0,13000);
   TH1F JetNHF   = TH1F("JetNHF","JetNHF",1000,0,1);
   TH1F JetCHF   = TH1F("JetCHF","JetCHF",1000,0,1);
-  TH1F JetNHF_pt1 = TH1F("JetNHF_pt1","JetNHF_pt1",800,0,8000);
-  TH1F JetNHF_pt2 = TH1F("JetNHF_pt2","JetNHF_pt2",800,0,8000);
+  TH1F JetNHF_pt1  = TH1F("JetNHF_pt1" ,"JetNHF_pt1",160,0,8000);
+  TH1F JetNHF_eta1 = TH1F("JetNHF_eta1","JetNHF_eta1",50,-5,5);
+  TH1F JetNHF_pt2 = TH1F("JetNHF_pt2","JetNHF_pt2",160,0,8000);
+  TH1F JetNHF_eta2 = TH1F("JetNHF_eta2","JetNHF_eta2",50,-5,5);
 
   TProfile NPV_multi = TProfile("NPV_multi","NPV_multi",10,2,12,"s"); 
 
@@ -591,10 +593,12 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
 				iLeadingIsoJet = iJet;
 				JetNHF.Fill(JetNeutHadFrac[iJet]);
 				JetCHF.Fill(JetChgHadFrac[iJet]);
-				if(JetNeutHadFrac[iJet]==0){
+				if(JetNeutHadFrac[iJet]<=0.001){
 					JetNHF_pt1.Fill(JetPt[iJet]);
+					JetNHF_eta1.Fill(JetEta[iJet]);
 				}else{
 					JetNHF_pt2.Fill(JetPt[iJet]);
+					JetNHF_eta2.Fill(JetEta[iJet]);
 				}
 			}
 		}
