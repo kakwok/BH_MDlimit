@@ -49,9 +49,9 @@ BH2_n6 = f.Get("BH2_n6")
 BH5_n2 = f.Get("BH5_n2")
 BH5_n4 = f.Get("BH5_n4")
 BH5_n6 = f.Get("BH5_n6")
-BH5_n2_exp = f.Get("BH5_n2_exp")
-BH5_n4_exp = f.Get("BH5_n4_exp")
-BH5_n6_exp = f.Get("BH5_n6_exp")
+#BH5_n2_exp = f.Get("BH5_n2_exp")
+#BH5_n4_exp = f.Get("BH5_n4_exp")
+#BH5_n6_exp = f.Get("BH5_n6_exp")
 
 
 BH1=[BH1_n2,BH1_n4,BH1_n6]
@@ -67,7 +67,7 @@ for g in BH1:
 	if "n4" in g.GetName():
 		g.SetLineStyle(2)
 	if "n2" in g.GetName():
-		g.SetLineStyle(9)
+		g.SetLineStyle(5)
 for g in BH2:
 	g.SetLineColor(kBlue)
 	g.SetFillColor(kBlue)
@@ -77,32 +77,32 @@ for g in BH2:
 	if "n4" in g.GetName():
 		g.SetLineStyle(2)
 	if "n2" in g.GetName():
-		g.SetLineStyle(9)
+		g.SetLineStyle(5)
 
 for g in BH5:
-	g.SetLineColor(kOrange)
-	g.SetFillColor(kOrange)
-	g.SetMarkerStyle(kFullTriangleUp)
-	g.SetMarkerColor(kOrange)
-	g.SetLineWidth(2)
-	if "n4" in g.GetName():
-		g.SetLineStyle(2)
-	if "n2" in g.GetName():
-		g.SetLineStyle(9)
-
-
-for g in BH5_exp:
 	g.SetLineColor(kRed)
 	g.SetFillColor(kRed)
-	g.SetMarkerStyle(kFullTriangleDown)
+	g.SetMarkerStyle(kFullTriangleUp)
 	g.SetMarkerColor(kRed)
 	g.SetLineWidth(2)
-	if "n6" in g.GetName():
-		g.SetLineStyle(1)
 	if "n4" in g.GetName():
 		g.SetLineStyle(2)
 	if "n2" in g.GetName():
-		g.SetLineStyle(9)
+		g.SetLineStyle(5)
+
+
+#for g in BH5_exp:
+#	g.SetLineColor(kRed)
+#	g.SetFillColor(kRed)
+#	g.SetMarkerStyle(kFullTriangleDown)
+#	g.SetMarkerColor(kRed)
+#	g.SetLineWidth(2)
+#	if "n6" in g.GetName():
+#		g.SetLineStyle(1)
+#	if "n4" in g.GetName():
+#		g.SetLineStyle(2)
+#	if "n2" in g.GetName():
+#		g.SetLineStyle(5)
 
 mg = TMultiGraph()
 
@@ -115,12 +115,12 @@ mg.Add(BH2_n6)
 mg.Add(BH5_n2)
 mg.Add(BH5_n4)
 mg.Add(BH5_n6)
-mg.Add(BH5_n2_exp)
-mg.Add(BH5_n4_exp)
-mg.Add(BH5_n6_exp)
+#mg.Add(BH5_n2_exp)
+#mg.Add(BH5_n4_exp)
+#mg.Add(BH5_n6_exp)
 
 
-mg.SetMinimum(5.5)
+mg.SetMinimum(5.8)
 mg.SetMaximum(9.7)
 
 mg.Draw("ALP")
@@ -150,21 +150,22 @@ n4.SetLineWidth(2)
 n4.SetLineStyle(2)
 n2 = TGraph()
 n2.SetLineWidth(2)
-n2.SetLineStyle(9)
+n2.SetLineStyle(5)
 
 leg= TLegend(0.15,0.145,0.7,0.295, "BlackMax", "brNDC")
 leg.SetNColumns(2)
-leg.AddEntry(BH1_n6,"Non-rotating, no graviton emission (B1)","p")
+leg.AddEntry(BH1_n6,"Nonrotating, no graviton emission (B1)","p")
 leg.AddEntry(n6,"n = 6","l")
 leg.AddEntry(BH2_n6,"Rotating, no graviton emission (B2)","p")
 leg.AddEntry(n4,"n = 4","l")
 leg.AddEntry(BH5_n6,"Rotating, energy/momentum loss (B3)","p")
 leg.AddEntry(n2,"n = 2","l")
-leg.AddEntry(BH5_n6_exp,"Rotating, B3 (Expected)","p")
+#leg.AddEntry(BH5_n6_exp,"Rotating, B3 (Expected)","p")
 leg.SetBorderSize(0)
 leg.SetTextFont(42)
 leg.SetTextSize(0.03)
 leg.Draw()
 
-canvas.SaveAs("BHlimit_CWR.pdf")
+canvas.SaveAs("BHlimit_fullsim_May31.pdf")
+#canvas.SaveAs("BHlimit_CWR.pdf")
 #canvas.SaveAs("BHlimit_fullsim_May31.pdf")

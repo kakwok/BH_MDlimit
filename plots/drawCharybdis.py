@@ -72,7 +72,7 @@ for g in BH8:
 	if "n4" in g.GetName():
 		g.SetLineStyle(2)
 	if "n2" in g.GetName():
-		g.SetLineStyle(9)
+		g.SetLineStyle(5)
 
 for g in BH2:
 	g.SetLineColor(kBlue)
@@ -83,7 +83,7 @@ for g in BH2:
 	if "n4" in g.GetName():
 		g.SetLineStyle(2)
 	if "n2" in g.GetName():
-		g.SetLineStyle(9)
+		g.SetLineStyle(5)
 
 for g in BH4:
 	g.SetLineColor(kOrange)
@@ -94,7 +94,7 @@ for g in BH4:
 	if "n4" in g.GetName():
 		g.SetLineStyle(2)
 	if "n2" in g.GetName():
-		g.SetLineStyle(9)
+		g.SetLineStyle(5)
 
 for g in BH6:
 	g.SetLineColor(kRed)
@@ -105,7 +105,7 @@ for g in BH6:
 	if "n4" in g.GetName():
 		g.SetLineStyle(2)
 	if "n2" in g.GetName():
-		g.SetLineStyle(9)
+		g.SetLineStyle(5)
 
 for g in BH10:
 	g.SetLineColor(kGreen)
@@ -116,7 +116,7 @@ for g in BH10:
 	if "n4" in g.GetName():
 		g.SetLineStyle(2)
 	if "n2" in g.GetName():
-		g.SetLineStyle(9)
+		g.SetLineStyle(5)
 
 
 mg = TMultiGraph()
@@ -166,10 +166,10 @@ n4.SetLineWidth(2)
 n4.SetLineStyle(2)
 n2 = TGraph()
 n2.SetLineWidth(2)
-n2.SetLineStyle(9)
+n2.SetLineStyle(5)
 
 
-leg= TLegend(0.15,0.15,0.9,0.3, "Charybdis", "brNDC")
+leg= TLegend(0.15,0.15,0.92,0.3, "Charybdis2", "brNDC")
 leg.SetNColumns(3)
 leg.AddEntry(BH2_n6,"Rotating (C1)","p")
 leg.AddEntry(BH4_n6,"Nonrotating (C2)","p")
@@ -185,4 +185,5 @@ leg.Draw()
 leg.SetTextFont(42)
 leg.SetTextSize(0.03)
 
-canvas.SaveAs("Charybdis_limit_CWR.pdf")
+#canvas.SaveAs("Charybdis_limit_CWR.pdf")
+canvas.SaveAs("Charybdis_final_Aug18.pdf")
