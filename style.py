@@ -1,4 +1,4 @@
-# Class to define style for hPlus
+# Class  define style for hPlus
 
 from ROOT import *
 
@@ -22,7 +22,8 @@ class style:
 		self.color     = kBlack
 		self.FillStyle = 0
 		self.setFromDict(dictList[n])
-
-#ikWhite  = 0,   kBlack  = 1,   kGray    = 920,  kRed    = 632,  kGreen  = 416,
+        def getColor(self):
+                return self.color
+#ikWhit 0,   kBlack  = 1,   kGray    = 920,  kRed    = 632,  kGreen  = 416,
 #kBlue   = 600, kYellow = 400, kMagenta = 616,  kCyan   = 432,  kOrange = 800,
 #kSpring = 820, kTeal   = 840, kAzure   =  860, kViolet = 880,  kPink   = 900

@@ -29,4 +29,6 @@ class hPlus:
 	#Return histo
 	def getTH1(self):
 		return self.histo
-
+        #Reutrn style
+        def getStyle(self):
+                return self.style
