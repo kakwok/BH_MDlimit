@@ -57,6 +57,9 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
   TH1F OurMET   = TH1F("OurMET"  ,"OurMET"  ,130,0,13000);
   TH1F JetNHF   = TH1F("JetNHF","JetNHF",1000,0,1);
   TH1F JetCHF   = TH1F("JetCHF","JetCHF",1000,0,1);
+  TH1F JetNHF_pt1 = TH1F("JetNHF_pt1","JetNHF_pt1",800,0,8000);
+  TH1F JetNHF_pt2 = TH1F("JetNHF_pt2","JetNHF_pt2",800,0,8000);
+
   TProfile NPV_multi = TProfile("NPV_multi","NPV_multi",10,2,12,"s"); 
 
   TH2F METvsMHT                            = TH2F("METvsMHT"                            ,  "METvsMHT"                        ,  1000,  0.,  20000.,  1000,  0.,  20000.);
@@ -200,6 +203,7 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
   long long  evtno                     ;
   int        lumiblock                 ;
   float      JetEt [25]                ;
+  float      JetPt [25]                ;
   float      JetPx [25]                ;
   float      JetPy [25]                ;
   float      JetEta[25]                ;
@@ -246,6 +250,7 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
   TBranch  *b_passed_GiovanniFilter;   
   TBranch  *b_passed_Dimafilter;   
   TBranch  *b_JetEt                     ;
+  TBranch  *b_JetPt                     ;
   TBranch  *b_JetPx                     ;
   TBranch  *b_JetPy                     ;
   TBranch  *b_JetEta                    ;
@@ -312,6 +317,7 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
   chain.SetBranchAddress( "lumiblock"                 ,  &lumiblock                 ,  &b_lumiblock                 );
   chain.SetBranchAddress( "evtno"                     ,  &evtno                     ,  &b_evtno                     );
   chain.SetBranchAddress( "JetEt"                     ,  JetEt                      ,  &b_JetEt                     );
+  chain.SetBranchAddress( "JetPt"                     ,  JetPt                      ,  &b_JetPt                     );
   chain.SetBranchAddress( "JetPx"                     ,  JetPx                      ,  &b_JetPx                     );
   chain.SetBranchAddress( "JetPy"                     ,  JetPy                      ,  &b_JetPy                     );
   chain.SetBranchAddress( "JetEta"                    ,  JetEta                     ,  &b_JetEta                    );
@@ -581,9 +587,16 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
 	//Exclude Leading jet that is not isolated.	
         for (int iJet = 0; iJet < 25; ++iJet) {
 		if(JetIso[iJet]){
-			if(iLeadingIsoJet!=-1) iLeadingIsoJet = iJet;
-			JetNHF.Fill(JetNeutHadFrac[iJet]);
-			JetCHF.Fill(JetChgHadFrac[iJet]);
+			if(iLeadingIsoJet==-1){
+				iLeadingIsoJet = iJet;
+				JetNHF.Fill(JetNeutHadFrac[iJet]);
+				JetCHF.Fill(JetChgHadFrac[iJet]);
+				if(JetNeutHadFrac[iJet]==0){
+					JetNHF_pt1.Fill(JetPt[iJet]);
+				}else{
+					JetNHF_pt2.Fill(JetPt[iJet]);
+				}
+			}
 		}
 	}
 
@@ -964,6 +977,8 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
   OurMET.Write();
   NPV_multi.Write();
   JetNHF.Write();
+  JetNHF_pt1.Write();
+  JetNHF_pt2.Write();
   JetCHF.Write();
   outRootFile->cd();
   outRootFile->mkdir("ST");
