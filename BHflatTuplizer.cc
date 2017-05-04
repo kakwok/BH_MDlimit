@@ -982,7 +982,8 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
   NPV_multi.Write();
   JetNHF.Write();
   JetNHF_pt1.Write();
-  JetNHF_pt2.Write();
+  JetNHF_eta1.Write();
+  JetNHF_eta2.Write();
   JetCHF.Write();
   outRootFile->cd();
   outRootFile->mkdir("ST");
