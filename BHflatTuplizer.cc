@@ -606,7 +606,7 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
 					JetNHF_pt2.Fill(JetPt[iJet]);
 					JetNHF_eta2.Fill(JetEta[iJet]);
 				}
-				if(JetChgHadFrac[iJet]<=0.001){
+				if(JetChgHadFrac[iJet]<0.99){
 					JetCHF_pt1.Fill(JetPt[iJet]);
 					JetCHF_eta1.Fill(JetEta[iJet]);
 				}else{
