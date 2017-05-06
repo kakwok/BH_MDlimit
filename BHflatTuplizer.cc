@@ -196,8 +196,11 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
   // variables accessed from the tree
   //TODO
   Bool_t     firedHLT_PFHT800            ;
+  Bool_t     firedHLT_PFHT900            ;
   Bool_t     firedHLT_PFHT475            ;
   Bool_t     firedHLT_PFJet450            ;
+  Bool_t     firedHLT_AK8PFJet450            ;
+  Bool_t     firedHLT_CaloJet500_NoJetID            ;
   Bool_t     passed_globalTightHalo2016Filter ;
   Bool_t     passed_goodVertices       ;
   Bool_t     passed_eeBadScFilter      ;
@@ -246,8 +249,11 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
   // tree branches
   //TODO
   TBranch  *b_firedHLT_PFHT800          ;
+  TBranch  *b_firedHLT_PFHT900          ;
   TBranch  *b_firedHLT_PFHT475          ;
   TBranch  *b_firedHLT_PFJet450         ;
+  TBranch  *b_firedHLT_CaloJet500_NoJetID         ;
+  TBranch  *b_firedHLT_AK8PFJet450         ;
   TBranch  *b_passed_globalTightHalo2016Filter ;
   TBranch  *b_passed_goodVertices       ;
   TBranch  *b_passed_eeBadScFilter      ;
@@ -310,8 +316,11 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
   // set all branch addresses
   // TODO
   chain.SetBranchAddress( "firedHLT_PFHT800"          ,  &firedHLT_PFHT800          ,  &b_firedHLT_PFHT800       );
+  chain.SetBranchAddress( "firedHLT_PFHT900"          ,  &firedHLT_PFHT900          ,  &b_firedHLT_PFHT900       );
   chain.SetBranchAddress( "firedHLT_PFHT475"          ,  &firedHLT_PFHT475          ,  &b_firedHLT_PFHT475       );
   chain.SetBranchAddress( "firedHLT_PFJet450"         ,  &firedHLT_PFJet450         ,  &b_firedHLT_PFJet450      );
+  chain.SetBranchAddress( "firedHLT_CaloJet500_NoJetID"  ,  &firedHLT_CaloJet500_NoJetID  ,  &b_firedHLT_CaloJet500_NoJetID      );
+  chain.SetBranchAddress( "firedHLT_AK8PFJet450"         ,  &firedHLT_AK8PFJet450         ,  &b_firedHLT_AK8PFJet450      );
   chain.SetBranchAddress( "passed_globalTightHalo2016Filter" ,  &passed_globalTightHalo2016Filter ,  &b_passed_globalTightHalo2016Filter );
   chain.SetBranchAddress( "passed_goodVertices"       ,  &passed_goodVertices       ,  &b_passed_goodVertices       );
   chain.SetBranchAddress( "passed_eeBadScFilter"      ,  &passed_eeBadScFilter      ,  &b_passed_eeBadScFilter      );
@@ -390,7 +399,7 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
     //TODO
     if ( is2016H ){
       if ( isData &&  
-       ( !(firedHLT_PFHT800  || firedHLT_PFJet450)  
+       ( !(firedHLT_PFHT900||firedHLT_PFHT800  || firedHLT_PFJet450 || firedHLT_CaloJet500_NoJetID||firedHLT_AK8PFJet450)  
              || !passed_globalTightHalo2016Filter 
              || !passed_goodVertices 
              || !passed_eeBadScFilter  
