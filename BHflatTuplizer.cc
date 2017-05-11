@@ -209,6 +209,8 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
   Bool_t     passed_filterbadPFMuon;
   //Bool_t     passed_GiovanniFilter;
   Bool_t     passed_Dimafilter;
+  Bool_t     passed_HBHENoiseFilter;
+  Bool_t     passed_HBHENoiseIsoFilter;
   int        runno                     ;
   long long  evtno                     ;
   int        lumiblock                 ;
@@ -262,6 +264,8 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
   TBranch  *b_passed_filterbadPFMuon;   
   TBranch  *b_passed_GiovanniFilter;   
   TBranch  *b_passed_Dimafilter;   
+  TBranch  *b_passed_HBHENoiseFilter;   
+  TBranch  *b_passed_HBHENoiseIsoFilter;   
   TBranch  *b_JetEt                     ;
   TBranch  *b_JetPt                     ;
   TBranch  *b_JetPx                     ;
@@ -329,6 +333,8 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
   chain.SetBranchAddress( "passed_filterbadPFMuon"      ,  &passed_filterbadPFMuon      ,  &b_passed_filterbadPFMuon      );
 //  chain.SetBranchAddress( "passed_GiovanniFilter"      ,  &passed_GiovanniFilter      ,  &b_passed_GiovanniFilter      );
   chain.SetBranchAddress( "passed_Dimafilter"         ,  &passed_Dimafilter         ,  &b_passed_Dimafilter      );
+  chain.SetBranchAddress( "passed_HBHENoiseFilter"         ,  &passed_HBHENoiseFilter         ,  &b_passed_HBHENoiseFilter      );
+  chain.SetBranchAddress( "passed_HBHENoiseIsoFilter"         ,  &passed_HBHENoiseIsoFilter         ,  &b_passed_HBHENoiseIsoFilter      );
   chain.SetBranchAddress( "runno"                     ,  &runno                     ,  &b_runno                     );
   chain.SetBranchAddress( "lumiblock"                 ,  &lumiblock                 ,  &b_lumiblock                 );
   chain.SetBranchAddress( "evtno"                     ,  &evtno                     ,  &b_evtno                     );
@@ -408,6 +414,8 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
              || !passed_filterbadPFMuon  
     //         || !passed_GiovanniFilter  
              || !passed_Dimafilter
+             || !passed_HBHENoiseFilter
+             || !passed_HBHENoiseIsoFilter
         ) ) continue;
     }
     else{
@@ -421,6 +429,8 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
 		|| !passed_filterbadPFMuon  
 	//	|| !passed_GiovanniFilter  
                 || !passed_Dimafilter
+             	|| !passed_HBHENoiseFilter
+	        || !passed_HBHENoiseIsoFilter
        ) ) continue;
      }
 
