@@ -132,6 +132,8 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
   TH1F stHist_tight = TH1F("stHist_tight", "ST_tight", nBin, STlow, STup);
   int mult=2;
   int multMax = 12;
+  TH1F *mBH_IncHist[multMax-2];
+  TH1F *mBH_ExcHist[multMax-2];
   TH1F *stIncHist[multMax-2];
   TH1F *stExcHist[multMax-2];
   TH1F *stIncHist_tight[multMax-2];
@@ -145,6 +147,11 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
   char *histTitle = new char[20];
   // These use pat::slimmedMETs
   for (int iHist = 0; iHist<multMax-2; ++iHist) {
+    sprintf(histTitle, "mBH_Inc%02dHist", mult);
+    mBH_IncHist[iHist] = new TH1F(histTitle, "Inclusive mBH", nBin, STlow, STup);
+    sprintf(histTitle, "mBH_Exc%02dHist", mult);
+    mBH_ExcHist[iHist] = new TH1F(histTitle, "Exclusive mBH", nBin, STlow, STup);
+
     sprintf(histTitle, "stInc%02dHist", mult);
     stIncHist[iHist] = new TH1F(histTitle, "Inclusive ST", nBin, STlow, STup);
     sprintf(histTitle, "stExc%02dHist", mult);
@@ -856,8 +863,8 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
           stHistMHT_tight.Fill(STMHTnoMET_tight);
         }
         for (int iHist = 0; iHist<multMax-2; ++iHist) {
-          if (multiplicity == iHist+2 && passMetCut) stExcHist[iHist]->Fill(ST);
-          if (multiplicity >= iHist+2 && passMetCut) stIncHist[iHist]->Fill(ST);
+          if (multiplicity == iHist+2 && passMetCut) {stExcHist[iHist]->Fill(ST);  mBH_ExcHist[iHist]->Fill(mBH);}
+          if (multiplicity >= iHist+2 && passMetCut) {stIncHist[iHist]->Fill(ST);  mBH_IncHist[iHist]->Fill(mBH);}
           if (multiplicity_tight == iHist+2 && passMetCut_tight) stExcHist_tight[iHist]->Fill(ST_tight);
           if (multiplicity_tight >= iHist+2 && passMetCut_tight) stIncHist_tight[iHist]->Fill(ST_tight);
         }
@@ -1026,6 +1033,7 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
 
   outRootFile->cd();
   outRootFile->mkdir("ST");
+  outRootFile->mkdir("m_BH");
   outRootFile->mkdir("ST_tight");
   outRootFile->mkdir("MET-MHT");
   outRootFile->mkdir("Isolation");
@@ -1040,6 +1048,11 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
   for (int iHist = 0; iHist<multMax-2; ++iHist) {
     stExcHistMHT[iHist]->Write();
     stIncHistMHT[iHist]->Write();
+  }
+  outRootFile->cd("m_BH");
+  for (int iHist = 0; iHist<multMax-2; ++iHist) {
+    mBH_ExcHist[iHist]->Write();
+    mBH_IncHist[iHist]->Write();
   }
 
   outRootFile->cd("ST_tight");
