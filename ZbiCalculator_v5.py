@@ -57,11 +57,6 @@ data  ="all2015C+D_NoMetCut+NewMETFilter.root"
 DataRoot  =TFile("%s"%data)
 DataDir   =DataRoot.Get("ST")
 
-FitN2Root =TFile("fitfunctions_ex2.root","READ")
-UncerRoot =TFile("background_shape_uncertainty.root","READ")
-bestfitN2 = FitN2Root.Get("fit0")
-Uncer     = UncerRoot.Get("shape_unc")
-
 fitNormRanges = FitAndNormRange("FitNormRanges.txt")
 #fitNormRanges.showFitRanges()
 #fitNormRanges.showNormRanges()
