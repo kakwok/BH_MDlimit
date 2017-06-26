@@ -32,11 +32,11 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
   bool isData        = true;
   bool debugFlag     = false ;
   int  eventsToDump  = 25    ;  // if debugFlag is true, then stop once the number of dumped events reaches eventsToDump
-  bool dumpBigEvents = true  ;
+  bool dumpBigEvents = false ;
   bool dumpIsoInfo   = false ;
   int  nDumpedEvents = 0     ;
   bool useMETcut     = false ;
-  int  nBin	     = 130   ; // 100 for 100 GeV bin, 1000 for 10 GeV bin in ST histograms	
+  int  nBin      = 130   ; // 100 for 100 GeV bin, 1000 for 10 GeV bin in ST histograms 
   int  STlow         = 0     ; // Lower bound of ST histogram: 500 GeV or 0 GeV
   int  STup          = 13000 ; // Upper bound of ST histogram
 
@@ -134,6 +134,26 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
   int multMax = 12;
   TH1F *mBH_IncHist[multMax-2];
   TH1F *mBH_ExcHist[multMax-2];
+  // signal histograms
+  TH1F *mBHsig_nJet[multMax-2];
+  TH1F *mBHsig_nEle[multMax-2];
+  TH1F *mBHsig_nMuon[multMax-2];
+  TH1F *mBHsig_nPhoton[multMax-2];
+  TH1F *mBHsig_MET[multMax-2];
+  TH1F *mBHsig_JetEta[multMax-2];
+  TH1F *mBHsig_JetpT[multMax-2];
+  TH1F *mBHsig_JetEt[multMax-2];
+  // background histograms
+  TH1F *mBHbkg_nJet[multMax-2];
+  TH1F *mBHbkg_nEle[multMax-2];
+  TH1F *mBHbkg_nMuon[multMax-2];
+  TH1F *mBHbkg_nPhoton[multMax-2];
+  TH1F *mBHbkg_MET[multMax-2];
+  TH1F *mBHbkg_JetEta[multMax-2];
+  TH1F *mBHbkg_JetpT[multMax-2];
+  TH1F *mBHbkg_JetEt[multMax-2];
+
+  // bkg histograms
   TH1F *stIncHist[multMax-2];
   TH1F *stExcHist[multMax-2];
   TH1F *stIncHist_tight[multMax-2];
@@ -151,6 +171,42 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
     mBH_IncHist[iHist] = new TH1F(histTitle, "Inclusive mBH", nBin, STlow, STup);
     sprintf(histTitle, "mBH_Exc%02dHist", mult);
     mBH_ExcHist[iHist] = new TH1F(histTitle, "Exclusive mBH", nBin, STlow, STup);
+
+    //Signal histograms
+    sprintf(histTitle, "mBHsig_nJet_Exc%02d", mult);
+    mBHsig_nJet[iHist]    = new TH1F(histTitle, "nJet in signal", 10, 0, 10);
+    sprintf(histTitle, "mBHsig_nEle_Exc%02d", mult);
+    mBHsig_nEle[iHist]    = new TH1F(histTitle, "nEle in signal", 10, 0, 10);
+    sprintf(histTitle, "mBHsig_nMuon_Exc%02d", mult);
+    mBHsig_nMuon[iHist]   = new TH1F(histTitle, "nMuon in signal", 10, 0, 10);
+    sprintf(histTitle, "mBHsig_nPhoton_Exc%02d", mult);
+    mBHsig_nPhoton[iHist] = new TH1F(histTitle, "nPhoton in signal", 10, 0, 10);
+    sprintf(histTitle, "mBHsig_MET_Exc%02d", mult);
+    mBHsig_MET[iHist]     = new TH1F(histTitle, "MET in signal", 120, 0, 6000);
+    sprintf(histTitle, "mBHsig_JetEta_Exc%02d", mult);
+    mBHsig_JetEta[iHist]  = new TH1F(histTitle, "JetEta in signal", 50, -5, 5);
+    sprintf(histTitle, "mBHsig_JetpT_Exc%02d", mult);
+    mBHsig_JetpT[iHist]   = new TH1F(histTitle, "JetpT in signal", 120, 0,6000 );
+    sprintf(histTitle, "mBHsig_JetEt_Exc%02d", mult);
+    mBHsig_JetEt[iHist]   = new TH1F(histTitle, "JetEt in signal", 120, 0,6000 );
+
+    //Bkg histograms
+    sprintf(histTitle, "mBHbkg_nJet_Exc%02d", mult);
+    mBHbkg_nJet[iHist]    = new TH1F(histTitle, "nJet in bkg", 10, 0, 10);
+    sprintf(histTitle, "mBHbkg_nEle_Exc%02d", mult);
+    mBHbkg_nEle[iHist]    = new TH1F(histTitle, "nEle in bkg", 10, 0, 10);
+    sprintf(histTitle, "mBHbkg_nMuon_Exc%02d", mult);
+    mBHbkg_nMuon[iHist]   = new TH1F(histTitle, "nMuon in bkg", 10, 0, 10);
+    sprintf(histTitle, "mBHbkg_nPhoton_Exc%02d", mult);
+    mBHbkg_nPhoton[iHist] = new TH1F(histTitle, "nPhoton in bkg", 10, 0, 10);
+    sprintf(histTitle, "mBHbkg_MET_Exc%02d", mult);
+    mBHbkg_MET[iHist]     = new TH1F(histTitle, "MET in bkg", 120, 0, 6000);
+    sprintf(histTitle, "mBHbkg_JetEta_Exc%02d", mult);
+    mBHbkg_JetEta[iHist]  = new TH1F(histTitle, "JetEta in bkg", 50, -5, 5);
+    sprintf(histTitle, "mBHbkg_JetpT_Exc%02d", mult);
+    mBHbkg_JetpT[iHist]   = new TH1F(histTitle, "JetpT in bkg", 120, 0,6000 );
+    sprintf(histTitle, "mBHbkg_JetEt_Exc%02d", mult);
+    mBHbkg_JetEt[iHist]   = new TH1F(histTitle, "JetEt in bkg", 120, 0,6000 );
 
     sprintf(histTitle, "stInc%02dHist", mult);
     stIncHist[iHist] = new TH1F(histTitle, "Inclusive ST", nBin, STlow, STup);
@@ -178,6 +234,10 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
   float ST               = 0.            ;
   float STMHTnoMET       = 0.            ;
   int multiplicity       = 0             ;
+  int nIsoJet            = 0             ;
+  int nIsoEle            = 0             ;
+  int nIsoMuon           = 0             ;
+  int nIsoPhoton         = 0             ;
   bool passIso           = true          ;
   float OurMet_tight     = 0.            ;
   float Px_tight         = 0.            ;
@@ -195,6 +255,9 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
   bool eventHasElectron  = false         ;
   bool  TightJets[25]                    ;
   bool  JetIso[25]                       ;
+  bool  EleIso[25]                       ;
+  bool  MuonIso[25]                       ;
+  bool  PhotonIso[25]                       ;
   bool  isTightJet       = false         ;
   float JetMuonEt        = 0.            ;
   float JetElectronEt    = 0.            ;
@@ -253,7 +316,7 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
   float      MuPFdBiso[25]             ;
   float      Met                       ;
   float      mBH                       ;
-  int        NPV		       ;
+  int        NPV               ;
 
   // tree branches
   //TODO
@@ -307,8 +370,8 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
   TBranch  *b_runno                     ;
   TBranch  *b_evtno                     ;
   TBranch  *b_lumiblock                 ;
-  TBranch  *b_mBH 	                ;
-  TBranch  *b_NPV 	                ;
+  TBranch  *b_mBH                   ;
+  TBranch  *b_NPV                   ;
 
   //create a chain by looping over the input filename
   TChain chain("bhana/t");
@@ -396,6 +459,10 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
     Py                  = 0.    ;
     ST                  = 0.    ;
     multiplicity        = 0     ;
+    nIsoJet            = 0      ;
+    nIsoEle            = 0      ;
+    nIsoMuon           = 0      ;
+    nIsoPhoton         = 0      ;
     OurMet_tight        = 0.    ;
     Px_tight            = 0.    ;
     Py_tight            = 0.    ;
@@ -404,8 +471,11 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
     eventHasMuon        = false ;
     eventHasPhoton      = false ;
     eventHasElectron    = false ;
-    std::fill(std::begin( TightJets ), std::end( TightJets ), false );
-    std::fill(std::begin( JetIso    ), std::end( JetIso    ), true );
+    std::fill(std::begin( TightJets    ), std::end( TightJets ), false );
+    std::fill(std::begin( JetIso       ), std::end( JetIso    ), true );
+    std::fill(std::begin( EleIso       ), std::end( EleIso    ), true );
+    std::fill(std::begin( MuonIso      ), std::end( MuonIso   ), true );
+    std::fill(std::begin( PhotonIso    ), std::end( PhotonIso ), true );
 
     chain.GetEntry(iEvent);
     // apply trigger and filter requirements
@@ -427,21 +497,21 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
     }
     else{
       if ( isData &&  
-	  ( !firedHLT_PFHT800    
-		|| !passed_globalTightHalo2016Filter 
-		|| !passed_goodVertices 
-		|| !passed_eeBadScFilter  
-		|| !passed_filterbadChCandidate  
-		|| !passed_EcalDeadCellTriggerPrimitiveFilter  
-		|| !passed_filterbadPFMuon  
-	//	|| !passed_GiovanniFilter  
+      ( !firedHLT_PFHT800    
+        || !passed_globalTightHalo2016Filter 
+        || !passed_goodVertices 
+        || !passed_eeBadScFilter  
+        || !passed_filterbadChCandidate  
+        || !passed_EcalDeadCellTriggerPrimitiveFilter  
+        || !passed_filterbadPFMuon  
+    //  || !passed_GiovanniFilter  
                 || !passed_Dimafilter
-             	|| !passed_HBHENoiseFilter
-	        || !passed_HBHENoiseIsoFilter
+                || !passed_HBHENoiseFilter
+            || !passed_HBHENoiseIsoFilter
        ) ) continue;
      }
 
-	h_mBH.Fill(mBH);
+    h_mBH.Fill(mBH);
         // use Yutaro's method for applying the event filter
         passMETfilterList=true;
         auto rItr(list.find(runno));
@@ -482,7 +552,7 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
           }
           if (fabs(JetEta[iJet])>2.7 && fabs(JetEta[iJet])<=3.0){
               if ( JetNNeutConstituents[iJet] > 2 && JetNeutHadFrac[iJet] < 0.98 && JetNeutEMFrac[iJet]>0.01) isTightJet=true;
-	  }
+      }
           if (fabs(JetEta[iJet])>3 && JetNeutEMFrac[iJet] < 0.9 && JetNNeutConstituents[iJet] > 10) isTightJet=true;
           TightJets[iJet]=isTightJet;
           if (JetEt[iJet]>PtCut) {
@@ -509,7 +579,7 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
                   }
                   if (JetMuonEt>0.8*JetEt[iJet]) {
                     passIso = false;
-		    JetIso[iJet] = false;
+            JetIso[iJet] = false;
                     if (isTightJet) {
                       passIso_tight=false;
                       if (dumpIsoInfo) {
@@ -545,7 +615,7 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
                   }
                   if (JetElectronEt > 0.7*JetEt[iJet] ) {
                     passIso = false;
-		    JetIso[iJet] = false;
+            JetIso[iJet] = false;
                     if (isTightJet) {
                       passIso_tight=false;
                       if (dumpIsoInfo) {
@@ -581,7 +651,7 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
                   }
                   if (JetPhotonEt>0.5*JetEt[iJet] ) {
                     passIso = false;
-		    JetIso[iJet] = false;
+            JetIso[iJet] = false;
                     if (isTightJet) {
                       passIso_tight=false;
                       if (dumpIsoInfo) {
@@ -599,6 +669,7 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
             if (debugFlag) outTextFile << "    JetEt for jet number " << iJet << " is: " << JetEt[iJet] << endl;
             ST += JetEt[iJet];
             multiplicity+=1;
+            nIsoJet+=1;
             Px += JetPx[iJet];
             Py += JetPy[iJet];
 
@@ -617,36 +688,36 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
           }
           else break;
         }
-	int iLeadingIsoJet = -1;
-	//Exclude Leading jet that is not isolated.	
+    int iLeadingIsoJet = -1;
+    //Exclude Leading jet that is not isolated. 
         for (int iJet = 0; iJet < 25; ++iJet) {
-		if(JetIso[iJet]){
-			if(iLeadingIsoJet==-1){
-				iLeadingIsoJet = iJet;
-				JetNHF.Fill(JetNeutHadFrac[iJet]);
-				JetCHF.Fill(JetChgHadFrac[iJet]);
-				if(JetNeutHadFrac[iJet]<=0.001){
-					JetNHF_pt1.Fill(JetPt[iJet]);
-					JetNHF_eta1.Fill(JetEta[iJet]);
-				}else{
-					JetNHF_pt2.Fill(JetPt[iJet]);
-					JetNHF_eta2.Fill(JetEta[iJet]);
-				}
-				if(JetChgHadFrac[iJet]<0.99){
-					JetCHF_pt1.Fill(JetPt[iJet]);
-					JetCHF_eta1.Fill(JetEta[iJet]);
-				}else{
-					JetCHF_pt2.Fill(JetPt[iJet]);
-					JetCHF_eta2.Fill(JetEta[iJet]);
-				}
+        if(JetIso[iJet]){
+            if(iLeadingIsoJet==-1){
+                iLeadingIsoJet = iJet;
+                JetNHF.Fill(JetNeutHadFrac[iJet]);
+                JetCHF.Fill(JetChgHadFrac[iJet]);
+                if(JetNeutHadFrac[iJet]<=0.001){
+                    JetNHF_pt1.Fill(JetPt[iJet]);
+                    JetNHF_eta1.Fill(JetEta[iJet]);
+                }else{
+                    JetNHF_pt2.Fill(JetPt[iJet]);
+                    JetNHF_eta2.Fill(JetEta[iJet]);
+                }
+                if(JetChgHadFrac[iJet]<0.99){
+                    JetCHF_pt1.Fill(JetPt[iJet]);
+                    JetCHF_eta1.Fill(JetEta[iJet]);
+                }else{
+                    JetCHF_pt2.Fill(JetPt[iJet]);
+                    JetCHF_eta2.Fill(JetEta[iJet]);
+                }
 
-			}
-		}
-	}
+            }
+        }
+    }
 
-	isLeadingJetTight = TightJets[iLeadingIsoJet];
-	if (!isLeadingJetTight) continue;
-	NJets.Fill(multiplicity);
+    isLeadingJetTight = TightJets[iLeadingIsoJet];
+    if (!isLeadingJetTight) continue;
+    NJets.Fill(multiplicity);
         //Electrons
         if (eventHasElectron) {
           for (int iElectron = 0; iElectron < 25; ++iElectron) {
@@ -657,6 +728,7 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
                 if (JetEt[iJet]>PtCut && dR(EleEta[iElectron],ElePhi[iElectron], JetEta[iJet], JetPhi[iJet]) < 0.3) {
                   if (EleEt[iElectron]<0.7*JetEt[iJet]) {
                     passIso = false;
+                    EleIso[iElectron]=false;
                     if(TightJets[iJet]) {
                       passIso_tight=false;
                       if (dumpIsoInfo) {
@@ -674,6 +746,7 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
               for (int iMuon = 0; iMuon < 25; ++iMuon ) {
                 if (MuEt[iMuon]>PtCut && MuPFdBiso[iMuon]<0.15 && dR(EleEta[iElectron],ElePhi[iElectron], MuEta[iMuon], MuPhi[iMuon]) < 0.3) {
                   passIso = false;
+                  EleIso[iElectron]=false;
                   passIso_tight = false;
                   if (dumpIsoInfo) {
                     sprintf(messageBuffer, "Electron number %d failed isolation with Muon number %d  in run number %d lumi section %d event number %lld\n", iElectron, iMuon, runno, lumiblock, evtno);
@@ -692,6 +765,7 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
               if (passIso) {
                 ST += EleEt[iElectron];
                 multiplicity+=1;
+                nIsoEle+=1;
                 Px += ElePx[iElectron];
                 Py += ElePy[iElectron];
               }
@@ -715,6 +789,7 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
                 if (JetEt[iJet]>PtCut && dR(PhEta[iPhoton],PhPhi[iPhoton], JetEta[iJet], JetPhi[iJet]) < 0.3) {
                   if (PhEt[iPhoton]<0.5*JetEt[iJet]) {
                     passIso = false;
+                    PhotonIso[iPhoton]=false;
                     if (TightJets[iJet]) {
                       passIso_tight=false;
                       if (dumpIsoInfo) {
@@ -737,6 +812,7 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
                   }
                   passIso = false;
                   passIso_tight = false;
+                  PhotonIso[iPhoton]=false;
                   break;
                 }
               }
@@ -750,6 +826,7 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
                     outTextFile << messageBuffer;
                   }
                   passIso = false;
+                  PhotonIso[iPhoton]=false;
                   passIso_tight = false;
                   break;
                 }
@@ -765,6 +842,7 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
               if (passIso) {
                 ST += PhEt[iPhoton];
                 multiplicity+=1;
+                nIsoPhoton+=1;
                 Px += PhPx[iPhoton];
                 Py += PhPy[iPhoton];
               }
@@ -788,6 +866,7 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
               if (debugFlag) cout << "    MuEt for muon number " << iMuon << " is: " << MuEt[iMuon] << endl;
               ST += MuEt[iMuon];
               multiplicity+=1;
+              nIsoMuon+=1;
               Px += MuPx[iMuon];
               Py += MuPy[iMuon];
               ST_tight += MuEt[iMuon];
@@ -804,9 +883,9 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
             else break;
           }
         }
-	h_NPV.Fill(NPV);
-	NJetPhElMu.Fill(multiplicity);
-	NPV_multi.Fill(multiplicity,NPV);
+    h_NPV.Fill(NPV);
+    NJetPhElMu.Fill(multiplicity);
+    NPV_multi.Fill(multiplicity,NPV);
 
 
         //debug info and big ST printing
@@ -862,6 +941,39 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
           stHist_tight.Fill(ST_tight);
           stHistMHT_tight.Fill(STMHTnoMET_tight);
         }
+        // Fill mBHsig/mBHbkg
+        for (int iHist = 0; iHist<multMax-2; ++iHist) {
+            if(multiplicity == iHist+2 && passMetCut){
+                if((mBH>=2800 && mBH<3300 )|| (mBH>4700 && mBH<=5500)){
+                    mBHbkg_nJet[iHist]->Fill(nIsoJet);
+                    mBHbkg_nEle[iHist]->Fill(nIsoEle);
+                    mBHbkg_nMuon[iHist]->Fill(nIsoMuon);
+                    mBHbkg_nPhoton[iHist]->Fill(nIsoPhoton);
+                    mBHbkg_MET[iHist]->Fill(Met);
+                    for (int iJet = 0; iJet < 25; ++iJet) {
+                        if(JetIso[iJet] && JetPt[iJet]>PtCut){
+                            mBHbkg_JetpT[iHist]->Fill(JetPt[iJet]);
+                            mBHbkg_JetEta[iHist]->Fill(JetEta[iJet]);
+                            mBHbkg_JetEt[iHist]->Fill(JetEt[iJet]);
+                        }
+                    }
+                }
+                if(mBH>=3300 && mBH<=4700 ){
+                    mBHsig_nJet[iHist]->Fill(nIsoJet);
+                    mBHsig_nEle[iHist]->Fill(nIsoEle);
+                    mBHsig_nMuon[iHist]->Fill(nIsoMuon);
+                    mBHsig_nPhoton[iHist]->Fill(nIsoPhoton);
+                    mBHsig_MET[iHist]->Fill(Met);
+                    for (int iJet = 0; iJet < 25; ++iJet) {
+                        if(JetIso[iJet] && JetPt[iJet]>PtCut){
+                            mBHsig_JetpT[iHist]->Fill(JetPt[iJet]);
+                            mBHsig_JetEta[iHist]->Fill(JetEta[iJet]);
+                            mBHsig_JetEt[iHist]->Fill(JetEt[iJet]);
+                        }
+                    }
+                }
+            }
+        }
         for (int iHist = 0; iHist<multMax-2; ++iHist) {
           if (multiplicity == iHist+2 && passMetCut) {stExcHist[iHist]->Fill(ST);  mBH_ExcHist[iHist]->Fill(mBH);}
           if (multiplicity >= iHist+2 && passMetCut) {stIncHist[iHist]->Fill(ST);  mBH_IncHist[iHist]->Fill(mBH);}
@@ -874,8 +986,8 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
           if (multiplicity_tight == iHist+2 && passMetCut_tight) stExcHistMHT_tight[iHist]->Fill(STMHTnoMET_tight);
           if (multiplicity_tight >= iHist+2 && passMetCut_tight) stIncHistMHT_tight[iHist]->Fill(STMHTnoMET_tight);
         }
-	MET.Fill(Met);
-	OurMET.Fill(OurMet);
+    MET.Fill(Met);
+    OurMET.Fill(OurMet);
         METvsMHT.Fill(OurMet,Met);
         METvsMHT_tight.Fill(OurMet_tight,Met);
         if (multiplicity>=2){
@@ -902,9 +1014,9 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
         // dump info on events with very big ST
         if (multiplicity>=2 && ST>5500 && dumpBigEvents) {
           //sprintf(messageBuffer, "In run number %d lumi section %d event number %lld: ST is %f, ST_tight is %f, and multiplicity is %d\n", runno, lumiblock, evtno, ST, ST_tight, multiplicity);
-	  sprintf(messageBuffer, "In run number %d lumi section %d event number %llu: ST is %f, ST_tight is %f, and multiplicity is %d\n", runno, lumiblock, evtno, ST, ST_tight, multiplicity);
+      sprintf(messageBuffer, "In run number %d lumi section %d event number %llu: ST is %f, ST_tight is %f, and multiplicity is %d\n", runno, lumiblock, evtno, ST, ST_tight, multiplicity);
           outTextFile << messageBuffer;
-	  sprintf(messageBuffer, "DimaFilter for this event is: %d\n", passed_Dimafilter);
+      sprintf(messageBuffer, "DimaFilter for this event is: %d\n", passed_Dimafilter);
           outTextFile << messageBuffer;
           for (int j=0; j<25; ++j) {
             if(JetEt[j]>0.000) {
@@ -1053,6 +1165,23 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
   for (int iHist = 0; iHist<multMax-2; ++iHist) {
     mBH_ExcHist[iHist]->Write();
     mBH_IncHist[iHist]->Write();
+    mBHsig_nJet[iHist]->Write();
+    mBHsig_nEle[iHist]->Write();
+    mBHsig_nMuon[iHist]->Write();
+    mBHsig_nPhoton[iHist]->Write();
+    mBHsig_MET[iHist]->Write();
+    mBHsig_JetEta[iHist]->Write();
+    mBHsig_JetpT[iHist]->Write();
+    mBHsig_JetEt[iHist]->Write();
+
+    mBHbkg_nJet[iHist]->Write();
+    mBHbkg_nEle[iHist]->Write();
+    mBHbkg_nMuon[iHist]->Write();
+    mBHbkg_nPhoton[iHist]->Write();
+    mBHbkg_MET[iHist]->Write();
+    mBHbkg_JetEta[iHist]->Write();
+    mBHbkg_JetpT[iHist]->Write();
+    mBHbkg_JetEt[iHist]->Write();
   }
 
   outRootFile->cd("ST_tight");
