@@ -20,6 +20,7 @@
 
 void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string metListFilename);
 float dR(float eta1, float phi1, float eta2, float phi2);
+float invMass(float vector4[4]);
 std::map<unsigned, std::set<unsigned> > readEventList(char const* _fileName);
 
 // inFilename    = NTuple input
@@ -134,6 +135,7 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
   int multMax = 12;
   TH1F *mBH_IncHist[multMax-2];
   TH1F *mBH_ExcHist[multMax-2];
+  TH1F *mBH_jet_ExcHist[multMax-2];
   // signal histograms
   TH1F *mBHsig_nJet[multMax-2];
   TH1F *mBHsig_nEle[multMax-2];
@@ -143,6 +145,10 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
   TH1F *mBHsig_JetEta[multMax-2];
   TH1F *mBHsig_JetpT[multMax-2];
   TH1F *mBHsig_JetEt[multMax-2];
+  TH1F *mBHsig_ST[multMax-2];
+  TH1F *mBHsig_STmet50[multMax-2];
+  TH1F *mBHsig_STmet100[multMax-2];
+  TH1F *mBHsig_STmet200[multMax-2];
   // background histograms
   TH1F *mBHbkg_nJet[multMax-2];
   TH1F *mBHbkg_nEle[multMax-2];
@@ -152,6 +158,11 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
   TH1F *mBHbkg_JetEta[multMax-2];
   TH1F *mBHbkg_JetpT[multMax-2];
   TH1F *mBHbkg_JetEt[multMax-2];
+  TH1F *mBHbkg_ST[multMax-2];
+  TH1F *mBHbkg_STmet50[multMax-2];
+  TH1F *mBHbkg_STmet100[multMax-2];
+  TH1F *mBHbkg_STmet200[multMax-2];
+
 
   // bkg histograms
   TH1F *stIncHist[multMax-2];
@@ -168,9 +179,11 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
   // These use pat::slimmedMETs
   for (int iHist = 0; iHist<multMax-2; ++iHist) {
     sprintf(histTitle, "mBH_Inc%02dHist", mult);
-    mBH_IncHist[iHist] = new TH1F(histTitle, "Inclusive mBH", nBin, STlow, STup);
+    mBH_IncHist[iHist] = new TH1F(histTitle, "Inclusive mBH", nBin*2, STlow, STup);
     sprintf(histTitle, "mBH_Exc%02dHist", mult);
-    mBH_ExcHist[iHist] = new TH1F(histTitle, "Exclusive mBH", nBin, STlow, STup);
+    mBH_ExcHist[iHist] = new TH1F(histTitle, "Exclusive mBH", nBin*2, STlow, STup);
+    sprintf(histTitle, "mBH_jet_Exc%02dHist", mult);
+    mBH_jet_ExcHist[iHist] = new TH1F(histTitle, "Exclusive mBH", nBin*2, STlow, STup);
 
     //Signal histograms
     sprintf(histTitle, "mBHsig_nJet_Exc%02d", mult);
@@ -189,6 +202,14 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
     mBHsig_JetpT[iHist]   = new TH1F(histTitle, "JetpT in signal", 120, 0,6000 );
     sprintf(histTitle, "mBHsig_JetEt_Exc%02d", mult);
     mBHsig_JetEt[iHist]   = new TH1F(histTitle, "JetEt in signal", 120, 0,6000 );
+    sprintf(histTitle, "mBHsig_ST_Exc%02d", mult);
+    mBHsig_ST[iHist]      = new TH1F(histTitle, "ST in signal", 130, 0,13000 );
+    sprintf(histTitle, "mBHsig_STmet50_Exc%02d", mult);
+    mBHsig_STmet50[iHist]      = new TH1F(histTitle, "ST in signal,met>50", 130, 0,13000 );
+    sprintf(histTitle, "mBHsig_STmet100_Exc%02d", mult);
+    mBHsig_STmet100[iHist]      = new TH1F(histTitle, "ST in signal,met>100", 130, 0,13000 );
+    sprintf(histTitle, "mBHsig_STmet200_Exc%02d", mult);
+    mBHsig_STmet200[iHist]      = new TH1F(histTitle, "ST in signal,met>200", 130, 0,13000 );
 
     //Bkg histograms
     sprintf(histTitle, "mBHbkg_nJet_Exc%02d", mult);
@@ -207,6 +228,16 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
     mBHbkg_JetpT[iHist]   = new TH1F(histTitle, "JetpT in bkg", 120, 0,6000 );
     sprintf(histTitle, "mBHbkg_JetEt_Exc%02d", mult);
     mBHbkg_JetEt[iHist]   = new TH1F(histTitle, "JetEt in bkg", 120, 0,6000 );
+    sprintf(histTitle, "mBHbkg_ST_Exc%02d", mult);
+    mBHbkg_ST[iHist]      = new TH1F(histTitle, "ST in bkg", 130, 0,13000 );
+    sprintf(histTitle, "mBHbkg_STmet50_Exc%02d", mult);
+    mBHbkg_STmet50[iHist]      = new TH1F(histTitle, "ST in bkg,met>50", 130, 0,13000 );
+    sprintf(histTitle, "mBHbkg_STmet100_Exc%02d", mult);
+    mBHbkg_STmet100[iHist]      = new TH1F(histTitle, "ST in bkg,met>100", 130, 0,13000 );
+    sprintf(histTitle, "mBHbkg_STmet200_Exc%02d", mult);
+    mBHbkg_STmet200[iHist]      = new TH1F(histTitle, "ST in bkg,met>200", 130, 0,13000 );
+
+
 
     sprintf(histTitle, "stInc%02dHist", mult);
     stIncHist[iHist] = new TH1F(histTitle, "Inclusive ST", nBin, STlow, STup);
@@ -262,6 +293,9 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
   float JetMuonEt        = 0.            ;
   float JetElectronEt    = 0.            ;
   float JetPhotonEt      = 0.            ;
+  float      vecSum[4]                   ;
+  float      mBH_cut     = 0.             ;
+  float      mBH_jet     = 0.             ;
 
   // variables accessed from the tree
   //TODO
@@ -284,10 +318,12 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
   int        runno                     ;
   long long  evtno                     ;
   int        lumiblock                 ;
+  float      JetE [25]                ;
   float      JetEt [25]                ;
   float      JetPt [25]                ;
   float      JetPx [25]                ;
   float      JetPy [25]                ;
+  float      JetPz [25]                ;
   float      JetEta[25]                ;
   float      JetPhi[25]                ;
   float      JetNeutHadFrac[25]        ;
@@ -298,23 +334,34 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
   int        JetNConstituents[25]      ;
   int        JetNNeutConstituents[25]  ;
   int        JetNChgConstituents[25]   ;
+  float      EleE[25]                 ;
   float      EleEt[25]                 ;
+  float      ElePt[25]                 ;
   float      ElePx[25]                 ;
   float      ElePy[25]                 ;
+  float      ElePz[25]                 ;
   float      EleEta[25]                ;
   float      ElePhi[25]                ;
+  float      PhE[25]                  ;
   float      PhEt[25]                  ;
+  float      PhPt[25]                  ;
   float      PhPx[25]                  ;
   float      PhPy[25]                  ;
+  float      PhPz[25]                  ;
   float      PhEta[25]                 ;
   float      PhPhi[25]                 ;
+  float      MuE[25]                  ;
   float      MuEt[25]                  ;
+  float      MuPt[25]                  ;
   float      MuPx[25]                  ;
   float      MuPy[25]                  ;
+  float      MuPz[25]                  ;
   float      MuEta[25]                 ;
   float      MuPhi[25]                 ;
   float      MuPFdBiso[25]             ;
   float      Met                       ;
+  float      MetPx                     ;
+  float      MetPy                     ;
   float      mBH                       ;
   int        NPV               ;
 
@@ -336,10 +383,12 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
   TBranch  *b_passed_Dimafilter;   
   TBranch  *b_passed_HBHENoiseFilter;   
   TBranch  *b_passed_HBHENoiseIsoFilter;   
+  TBranch  *b_JetE                     ;
   TBranch  *b_JetEt                     ;
   TBranch  *b_JetPt                     ;
   TBranch  *b_JetPx                     ;
   TBranch  *b_JetPy                     ;
+  TBranch  *b_JetPz                     ;
   TBranch  *b_JetEta                    ;
   TBranch  *b_JetPhi                    ;
   TBranch  *b_JetNeutHadFrac            ;
@@ -350,23 +399,34 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
   TBranch  *b_JetNConstituents          ;
   TBranch  *b_JetNNeutConstituents      ;
   TBranch  *b_JetNChgConstituents       ;
+  TBranch  *b_EleE                     ;
   TBranch  *b_EleEt                     ;
+  TBranch  *b_ElePt                     ;
   TBranch  *b_ElePx                     ;
   TBranch  *b_ElePy                     ;
+  TBranch  *b_ElePz                     ;
   TBranch  *b_EleEta                    ;
   TBranch  *b_ElePhi                    ;
+  TBranch  *b_PhE                      ;
   TBranch  *b_PhEt                      ;
+  TBranch  *b_PhPt                      ;
   TBranch  *b_PhPx                      ;
   TBranch  *b_PhPy                      ;
+  TBranch  *b_PhPz                      ;
   TBranch  *b_PhEta                     ;
   TBranch  *b_PhPhi                     ;
+  TBranch  *b_MuE                      ;
   TBranch  *b_MuEt                      ;
+  TBranch  *b_MuPt                      ;
   TBranch  *b_MuPx                      ;
   TBranch  *b_MuPy                      ;
+  TBranch  *b_MuPz                      ;
   TBranch  *b_MuEta                     ;
   TBranch  *b_MuPhi                     ;
   TBranch  *b_MuPFdBiso                 ;
   TBranch  *b_Met                       ;
+  TBranch  *b_MetPx                       ;
+  TBranch  *b_MetPy                       ;
   TBranch  *b_runno                     ;
   TBranch  *b_evtno                     ;
   TBranch  *b_lumiblock                 ;
@@ -408,10 +468,12 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
   chain.SetBranchAddress( "runno"                     ,  &runno                     ,  &b_runno                     );
   chain.SetBranchAddress( "lumiblock"                 ,  &lumiblock                 ,  &b_lumiblock                 );
   chain.SetBranchAddress( "evtno"                     ,  &evtno                     ,  &b_evtno                     );
+  chain.SetBranchAddress( "JetE"                      ,  JetE                       ,  &b_JetE                     );
   chain.SetBranchAddress( "JetEt"                     ,  JetEt                      ,  &b_JetEt                     );
   chain.SetBranchAddress( "JetPt"                     ,  JetPt                      ,  &b_JetPt                     );
   chain.SetBranchAddress( "JetPx"                     ,  JetPx                      ,  &b_JetPx                     );
   chain.SetBranchAddress( "JetPy"                     ,  JetPy                      ,  &b_JetPy                     );
+  chain.SetBranchAddress( "JetPz"                     ,  JetPz                      ,  &b_JetPz                     );
   chain.SetBranchAddress( "JetEta"                    ,  JetEta                     ,  &b_JetEta                    );
   chain.SetBranchAddress( "JetPhi"                    ,  JetPhi                     ,  &b_JetPhi                    );
   chain.SetBranchAddress( "JetNeutHadFrac"            ,  JetNeutHadFrac             ,  &b_JetNeutHadFrac            );
@@ -422,23 +484,34 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
   chain.SetBranchAddress( "JetNConstituents"          ,  JetNConstituents           ,  &b_JetNConstituents          );
   chain.SetBranchAddress( "JetNNeutConstituents"      ,  JetNNeutConstituents       ,  &b_JetNNeutConstituents      );
   chain.SetBranchAddress( "JetNChgConstituents"       ,  JetNChgConstituents        ,  &b_JetNChgConstituents       );
+  chain.SetBranchAddress( "EleE"                      ,  EleE                       ,  &b_EleE                     );
   chain.SetBranchAddress( "EleEt"                     ,  EleEt                      ,  &b_EleEt                     );
+  chain.SetBranchAddress( "ElePt"                     ,  ElePt                      ,  &b_ElePt                     );
   chain.SetBranchAddress( "ElePx"                     ,  ElePx                      ,  &b_ElePx                     );
   chain.SetBranchAddress( "ElePy"                     ,  ElePy                      ,  &b_ElePy                     );
+  chain.SetBranchAddress( "ElePz"                     ,  ElePz                      ,  &b_ElePz                     );
   chain.SetBranchAddress( "EleEta"                    ,  EleEta                     ,  &b_EleEta                    );
   chain.SetBranchAddress( "ElePhi"                    ,  ElePhi                     ,  &b_ElePhi                    );
+  chain.SetBranchAddress( "PhE"                      ,  PhE                       ,  &b_PhE                      );
   chain.SetBranchAddress( "PhEt"                      ,  PhEt                       ,  &b_PhEt                      );
+  chain.SetBranchAddress( "PhPt"                      ,  PhPt                       ,  &b_PhPt                      );
   chain.SetBranchAddress( "PhPx"                      ,  PhPx                       ,  &b_PhPx                      );
   chain.SetBranchAddress( "PhPy"                      ,  PhPy                       ,  &b_PhPy                      );
+  chain.SetBranchAddress( "PhPz"                      ,  PhPz                       ,  &b_PhPz                      );
   chain.SetBranchAddress( "PhEta"                     ,  PhEta                      ,  &b_PhEta                     );
   chain.SetBranchAddress( "PhPhi"                     ,  PhPhi                      ,  &b_PhPhi                     );
+  chain.SetBranchAddress( "MuE"                      ,  MuE                       ,  &b_MuE                      );
   chain.SetBranchAddress( "MuEt"                      ,  MuEt                       ,  &b_MuEt                      );
+  chain.SetBranchAddress( "MuPt"                      ,  MuPt                       ,  &b_MuPt                      );
   chain.SetBranchAddress( "MuPx"                      ,  MuPx                       ,  &b_MuPx                      );
   chain.SetBranchAddress( "MuPy"                      ,  MuPy                       ,  &b_MuPy                      );
+  chain.SetBranchAddress( "MuPz"                      ,  MuPz                       ,  &b_MuPz                      );
   chain.SetBranchAddress( "MuEta"                     ,  MuEta                      ,  &b_MuEta                     );
   chain.SetBranchAddress( "MuPhi"                     ,  MuPhi                      ,  &b_MuPhi                     );
   chain.SetBranchAddress( "MuPFdBiso"                 , MuPFdBiso                   ,  &b_MuPFdBiso                 );
   chain.SetBranchAddress( "Met"                       ,  &Met                       ,  &b_Met                       );
+  chain.SetBranchAddress( "MetPx"                     ,  &MetPx                       ,  &b_MetPx                       );
+  chain.SetBranchAddress( "MetPy"                     ,  &MetPy                       ,  &b_MetPy                       );
   chain.SetBranchAddress( "mBH"                       ,  &mBH                       ,  &b_mBH                       );
   chain.SetBranchAddress( "NPV"                       ,  &NPV                       ,  &b_NPV                       );
 
@@ -471,11 +544,14 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
     eventHasMuon        = false ;
     eventHasPhoton      = false ;
     eventHasElectron    = false ;
+    mBH_cut             = 0.    ;
+    mBH_jet             = 0.    ;
     std::fill(std::begin( TightJets    ), std::end( TightJets ), false );
     std::fill(std::begin( JetIso       ), std::end( JetIso    ), true );
     std::fill(std::begin( EleIso       ), std::end( EleIso    ), true );
     std::fill(std::begin( MuonIso      ), std::end( MuonIso   ), true );
     std::fill(std::begin( PhotonIso    ), std::end( PhotonIso ), true );
+    std::fill(std::begin( vecSum       ), std::end( vecSum    ), 0. );
 
     chain.GetEntry(iEvent);
     // apply trigger and filter requirements
@@ -542,7 +618,7 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
           JetElectronEt =0;
           JetPhotonEt   =0;
           //if (fabs(JetEta[iJet])<=3 && JetNeutHadFrac[iJet]<0.9 && JetNeutEMFrac[iJet]<0.9 && JetNConstituents[iJet]>1 && JetMuFrac[iJet]<0.8) 
-          //if (fabs(JetEta[iJet])<=2.7 && JetNeutHadFrac[iJet]<0.9 && JetNeutHadFrac[iJet]>0.001 && JetNeutEMFrac[iJet]<0.9 && JetNConstituents[iJet]>1 && JetMuFrac[iJet]<0.8) {
+          //if (fabs(JetEta[iJet])<=2.7 && JetNeutHadFrac[iJet]<0.9 && JetNeutHadFrac[iJet]>0.001 && JetNeutEMFrac[iJet]<0.9 && JetNConstituents[iJet]>1 && JetMuFrac[iJet]<0.8) 
           if (fabs(JetEta[iJet])<=2.7 && JetNeutHadFrac[iJet]<0.9  && JetNeutEMFrac[iJet]<0.9 && JetNConstituents[iJet]>1 && JetMuFrac[iJet]<0.8) {
             isTightJet=true;
             if (fabs(JetEta[iJet])<=2.4) {
@@ -552,7 +628,7 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
           }
           if (fabs(JetEta[iJet])>2.7 && fabs(JetEta[iJet])<=3.0){
               if ( JetNNeutConstituents[iJet] > 2 && JetNeutHadFrac[iJet] < 0.98 && JetNeutEMFrac[iJet]>0.01) isTightJet=true;
-      }
+          }
           if (fabs(JetEta[iJet])>3 && JetNeutEMFrac[iJet] < 0.9 && JetNNeutConstituents[iJet] > 10) isTightJet=true;
           TightJets[iJet]=isTightJet;
           if (JetEt[iJet]>PtCut) {
@@ -579,7 +655,7 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
                   }
                   if (JetMuonEt>0.8*JetEt[iJet]) {
                     passIso = false;
-            JetIso[iJet] = false;
+                    JetIso[iJet] = false;
                     if (isTightJet) {
                       passIso_tight=false;
                       if (dumpIsoInfo) {
@@ -651,7 +727,7 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
                   }
                   if (JetPhotonEt>0.5*JetEt[iJet] ) {
                     passIso = false;
-            JetIso[iJet] = false;
+                    JetIso[iJet] = false;
                     if (isTightJet) {
                       passIso_tight=false;
                       if (dumpIsoInfo) {
@@ -941,10 +1017,62 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
           stHist_tight.Fill(ST_tight);
           stHistMHT_tight.Fill(STMHTnoMET_tight);
         }
+
+        // Calculate mBH from iso objects
+        int nBH_jet = 0;
+        int nBH_photon = 0;
+        int nBH_electron = 0;
+        int nBH_muon = 0;
+        for (int iJet = 0; iJet < 25; ++iJet) {
+            if(JetIso[iJet] && JetEt[iJet]>20.0){
+                vecSum[0] += JetE[iJet];
+                vecSum[1] += JetPx[iJet];
+                vecSum[2] += JetPy[iJet];
+                vecSum[3] += JetPz[iJet];
+                nBH_jet +=1;
+            }
+        }
+        mBH_jet   = invMass(vecSum);
+        for (int iPhoton = 0; iPhoton < 25; ++iPhoton) {
+            if(PhotonIso[iPhoton] && PhEt[iPhoton]>20.0){
+                vecSum[0] += PhE[iPhoton];
+                vecSum[1] += PhPx[iPhoton];
+                vecSum[2] += PhPy[iPhoton];
+                vecSum[3] += PhPz[iPhoton];
+                nBH_photon +=1;
+            }
+        }
+        for (int iMuon = 0; iMuon < 25; ++iMuon) {
+            if(MuonIso[iMuon] && MuEt[iMuon]>20.0){
+                vecSum[0] += MuE[iMuon];
+                vecSum[1] += MuPx[iMuon];
+                vecSum[2] += MuPy[iMuon];
+                vecSum[3] += MuPz[iMuon];
+                nBH_muon+=1;
+            }
+        }
+        for (int iEle = 0; iEle < 25; ++iEle) {
+            if(EleIso[iEle] && EleEt[iEle]>20.0){
+                vecSum[0] += EleE[iEle];
+                vecSum[1] += ElePx[iEle];
+                vecSum[2] += ElePy[iEle];
+                vecSum[3] += ElePz[iEle];
+                nBH_electron +=1;
+            }
+        }
+        vecSum[1] += MetPx;
+        vecSum[2] += MetPy;
+        mBH_cut   = invMass(vecSum);
+        //int nBH_total = nBH_jet+nBH_electron+nBH_photon+nBH_muon;
+        //cout << "mBH_cut="<<mBH_cut<<" mBH="<<mBH<<"   multiplicity = "<<multiplicity<<"    MET="<<Met<<"   nBH_total="<<nBH_total<<"   nBH_jet="<<nBH_jet<<"    nBH_electron="<<nBH_electron<<"   nBH_photon="<<nBH_photon<<"   nBH_muon="<<nBH_muon<<endl;
+
+
+
         // Fill mBHsig/mBHbkg
         for (int iHist = 0; iHist<multMax-2; ++iHist) {
             if(multiplicity == iHist+2 && passMetCut){
-                if((mBH>=2800 && mBH<3300 )|| (mBH>4700 && mBH<=5500)){
+                //if((mBH_cut>=2800 && mBH_cut<3300 )|| (mBH_cut>4700 && mBH_cut<=5500)){
+                if((mBH_cut>=2500 && mBH_cut<2700 )|| (mBH_cut>3900 && mBH_cut<=5000)){
                     mBHbkg_nJet[iHist]->Fill(nIsoJet);
                     mBHbkg_nEle[iHist]->Fill(nIsoEle);
                     mBHbkg_nMuon[iHist]->Fill(nIsoMuon);
@@ -957,8 +1085,12 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
                             mBHbkg_JetEt[iHist]->Fill(JetEt[iJet]);
                         }
                     }
+                    mBHbkg_ST[iHist]->Fill(ST);
+                    if(Met>=50.0)  mBHbkg_STmet50[iHist]->Fill(ST);
+                    if(Met>=100.0) mBHbkg_STmet100[iHist]->Fill(ST);
+                    if(Met>=200.0) mBHbkg_STmet200[iHist]->Fill(ST);
                 }
-                if(mBH>=3300 && mBH<=4700 ){
+                if(mBH_cut>=2700 && mBH_cut<=3900 ){
                     mBHsig_nJet[iHist]->Fill(nIsoJet);
                     mBHsig_nEle[iHist]->Fill(nIsoEle);
                     mBHsig_nMuon[iHist]->Fill(nIsoMuon);
@@ -971,12 +1103,17 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
                             mBHsig_JetEt[iHist]->Fill(JetEt[iJet]);
                         }
                     }
+                    mBHsig_ST[iHist]->Fill(ST);
+                    if(Met>=50.0)  mBHsig_STmet50[iHist]->Fill(ST);
+                    if(Met>=100.0) mBHsig_STmet100[iHist]->Fill(ST);
+                    if(Met>=200.0) mBHsig_STmet200[iHist]->Fill(ST);
+
                 }
             }
         }
         for (int iHist = 0; iHist<multMax-2; ++iHist) {
-          if (multiplicity == iHist+2 && passMetCut) {stExcHist[iHist]->Fill(ST);  mBH_ExcHist[iHist]->Fill(mBH);}
-          if (multiplicity >= iHist+2 && passMetCut) {stIncHist[iHist]->Fill(ST);  mBH_IncHist[iHist]->Fill(mBH);}
+          if (multiplicity == iHist+2 && passMetCut) {stExcHist[iHist]->Fill(ST);  mBH_ExcHist[iHist]->Fill(mBH_cut); mBH_jet_ExcHist[iHist]->Fill(mBH_jet);}
+          if (multiplicity >= iHist+2 && passMetCut) {stIncHist[iHist]->Fill(ST);  mBH_IncHist[iHist]->Fill(mBH_cut);}
           if (multiplicity_tight == iHist+2 && passMetCut_tight) stExcHist_tight[iHist]->Fill(ST_tight);
           if (multiplicity_tight >= iHist+2 && passMetCut_tight) stIncHist_tight[iHist]->Fill(ST_tight);
         }
@@ -1164,6 +1301,7 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
   outRootFile->cd("m_BH");
   for (int iHist = 0; iHist<multMax-2; ++iHist) {
     mBH_ExcHist[iHist]->Write();
+    mBH_jet_ExcHist[iHist]->Write();
     mBH_IncHist[iHist]->Write();
     mBHsig_nJet[iHist]->Write();
     mBHsig_nEle[iHist]->Write();
@@ -1173,6 +1311,10 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
     mBHsig_JetEta[iHist]->Write();
     mBHsig_JetpT[iHist]->Write();
     mBHsig_JetEt[iHist]->Write();
+    mBHsig_ST[iHist]->Write();
+    mBHsig_STmet50[iHist]->Write();
+    mBHsig_STmet100[iHist]->Write();
+    mBHsig_STmet200[iHist]->Write();
 
     mBHbkg_nJet[iHist]->Write();
     mBHbkg_nEle[iHist]->Write();
@@ -1182,6 +1324,12 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
     mBHbkg_JetEta[iHist]->Write();
     mBHbkg_JetpT[iHist]->Write();
     mBHbkg_JetEt[iHist]->Write();
+    mBHbkg_ST[iHist]->Write();
+    mBHbkg_STmet50[iHist]->Write();
+    mBHbkg_STmet100[iHist]->Write();
+    mBHbkg_STmet200[iHist]->Write();
+
+
   }
 
   outRootFile->cd("ST_tight");
@@ -1265,7 +1413,10 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
 float dR(float eta1, float phi1, float eta2, float phi2) {
   return std::sqrt( ( eta1 - eta2 )*( eta1 - eta2 ) + std::pow(TMath::ATan2(TMath::Sin( phi1 - phi2), TMath::Cos(phi1-phi2)),2) );
 }
-
+float invMass(float vector4[4]){
+    //E^2 - p^2
+    return std::sqrt(vector4[0]*vector4[0] - vector4[1]*vector4[1] - vector4[2]*vector4[2]- vector4[3]*vector4[3]);
+}
 
 // function to make an event list object for MET filtering
 std::map<unsigned, std::set<unsigned> > readEventList(char const* _fileName) {
