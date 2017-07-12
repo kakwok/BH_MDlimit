@@ -162,9 +162,12 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
   TH1F *mBHbkg_STmet50[multMax-2];
   TH1F *mBHbkg_STmet100[multMax-2];
   TH1F *mBHbkg_STmet200[multMax-2];
+  // ISR/FSR histograms
+  TH1F *Jet_Eta[multMax-2];
+  TH1F *Jet_dR[multMax-2];
+  TH1F *Jet_dRratio[multMax-2];
 
-
-  // bkg histograms
+  // ST histograms
   TH1F *stIncHist[multMax-2];
   TH1F *stExcHist[multMax-2];
   TH1F *stIncHist_tight[multMax-2];
@@ -210,6 +213,14 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
     mBHsig_STmet100[iHist]      = new TH1F(histTitle, "ST in signal,met>100", 130, 0,13000 );
     sprintf(histTitle, "mBHsig_STmet200_Exc%02d", mult);
     mBHsig_STmet200[iHist]      = new TH1F(histTitle, "ST in signal,met>200", 130, 0,13000 );
+
+    //ISR/FSR study
+    sprintf(histTitle, "Jet_Eta_Exc%02d", mult);
+    Jet_Eta[iHist]      = new TH1F(histTitle, "IsoJet Eta,ST>2TeV", 50, -5,5 );
+    sprintf(histTitle, "Jet_dR_Exc%02d", mult);
+    Jet_dR[iHist]      = new TH1F(histTitle, "IsoJet dR,ST>2TeV", 100, 0, 10 );
+    sprintf(histTitle, "Jet_dRratio_Exc%02d", mult);
+    Jet_dRratio[iHist]      = new TH1F(histTitle, "IsoJet dRmax/dRmin,ST>2TeV", 200, 0, 40 );
 
     //Bkg histograms
     sprintf(histTitle, "mBHbkg_nJet_Exc%02d", mult);
@@ -1065,8 +1076,31 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
         mBH_cut   = invMass(vecSum);
         //int nBH_total = nBH_jet+nBH_electron+nBH_photon+nBH_muon;
         //cout << "mBH_cut="<<mBH_cut<<" mBH="<<mBH<<"   multiplicity = "<<multiplicity<<"    MET="<<Met<<"   nBH_total="<<nBH_total<<"   nBH_jet="<<nBH_jet<<"    nBH_electron="<<nBH_electron<<"   nBH_photon="<<nBH_photon<<"   nBH_muon="<<nBH_muon<<endl;
+        
+        // Fill Jet ISR/FSR plots
+        for (int iHist = 0; iHist<multMax-2; ++iHist) {
+            if(multiplicity == iHist+2 && ST>2000.0 ){
+                // Just look at Jet pairs and make sure we have enough iso jets
+                if(nBH_jet>=multiplicity){
+                    double dRmax = 0;
+                    double dRmin = 999;
 
-
+                    for (int iJet = 0; iJet < 25; ++iJet) {
+                        for (int jJet = 0; jJet < 25; ++jJet) {
+                           //Look only at isolated jets entering ST calculation
+                           if(JetIso[iJet] && JetIso[jJet] && JetEt[iJet]>PtCut && JetEt[jJet]>PtCut && iJet != jJet){
+                                double dR_ij =  dR(JetEta[iJet],JetPhi[iJet],JetEta[jJet],JetPhi[jJet]);
+                                Jet_dR[iHist]->Fill( dR_ij );
+                                if(dR_ij > dRmax) dRmax = dR_ij;
+                                if(dR_ij < dRmin) dRmin = dR_ij;
+                           }
+                        }
+                        if(JetIso[iJet] && JetEt[iJet]>PtCut) Jet_Eta[iHist]->Fill(JetEta[iJet]);
+                    }
+                    Jet_dRratio[iHist]->Fill( dRmax/dRmin);
+                }
+            }
+        }
 
         // Fill mBHsig/mBHbkg
         for (int iHist = 0; iHist<multMax-2; ++iHist) {
@@ -1112,8 +1146,20 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
             }
         }
         for (int iHist = 0; iHist<multMax-2; ++iHist) {
-          if (multiplicity == iHist+2 && passMetCut) {stExcHist[iHist]->Fill(ST);  mBH_ExcHist[iHist]->Fill(mBH_cut); mBH_jet_ExcHist[iHist]->Fill(mBH_jet);}
-          if (multiplicity >= iHist+2 && passMetCut) {stIncHist[iHist]->Fill(ST);  mBH_IncHist[iHist]->Fill(mBH_cut);}
+          if (multiplicity == iHist+2 && passMetCut) {
+                stExcHist[iHist]->Fill(ST);
+                // 2.5*sqrt(ST) ~ <3 sigma of MET resolution
+                if( Met < 2.5*std::sqrt(ST)){
+                    mBH_ExcHist[iHist]->Fill(mBH_cut);
+                    mBH_jet_ExcHist[iHist]->Fill(mBH_jet);
+                }
+          }
+          if (multiplicity >= iHist+2 && passMetCut) {
+                stIncHist[iHist]->Fill(ST);  
+                if (Met<2.5*std::sqrt(ST)){
+                    mBH_IncHist[iHist]->Fill(mBH_cut);
+                }
+          }
           if (multiplicity_tight == iHist+2 && passMetCut_tight) stExcHist_tight[iHist]->Fill(ST_tight);
           if (multiplicity_tight >= iHist+2 && passMetCut_tight) stIncHist_tight[iHist]->Fill(ST_tight);
         }
@@ -1283,6 +1329,7 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
   outRootFile->cd();
   outRootFile->mkdir("ST");
   outRootFile->mkdir("m_BH");
+  outRootFile->mkdir("Jets");
   outRootFile->mkdir("ST_tight");
   outRootFile->mkdir("MET-MHT");
   outRootFile->mkdir("Isolation");
@@ -1331,6 +1378,14 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
 
 
   }
+
+  outRootFile->cd("Jets");
+  for (int iHist = 0; iHist<multMax-2; ++iHist) {
+    Jet_Eta[iHist]->Write();
+    Jet_dR[iHist]->Write();
+    Jet_dRratio[iHist]->Write();
+  }
+
 
   outRootFile->cd("ST_tight");
   stHist_tight.Write();
