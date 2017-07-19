@@ -69,6 +69,7 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
 
 
   TProfile NPV_multi = TProfile("NPV_multi","NPV_multi",10,2,12,"s"); 
+  TH2F  multi_NPV    = TH2F("multi_NPV","multi_NPV",50,0,50,10,2,12); 
 
   TH2F METvsMHT                            = TH2F("METvsMHT"                            ,  "METvsMHT"                        ,  1000,  0.,  20000.,  1000,  0.,  20000.);
   TH2F METvsMHTinc2                        = TH2F("METvsMHTinc2"                        ,  "METvsMHTinc2"                    ,  1000,  0.,  20000.,  1000,  0.,  20000.);
@@ -165,7 +166,10 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
   // ISR/FSR histograms
   TH1F *Jet_Eta[multMax-2];
   TH1F *Jet_dR[multMax-2];
+  TH1F *Jet_dRmax[multMax-2];
+  TH1F *Jet_dRmin[multMax-2];
   TH1F *Jet_dRratio[multMax-2];
+  TH1F *nPV[multMax-2];
 
   // ST histograms
   TH1F *stIncHist[multMax-2];
@@ -219,8 +223,14 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
     Jet_Eta[iHist]      = new TH1F(histTitle, "IsoJet Eta,ST>2TeV", 50, -5,5 );
     sprintf(histTitle, "Jet_dR_Exc%02d", mult);
     Jet_dR[iHist]      = new TH1F(histTitle, "IsoJet dR,ST>2TeV", 100, 0, 10 );
+    sprintf(histTitle, "Jet_dRmax_Exc%02d", mult);
+    Jet_dRmax[iHist]      = new TH1F(histTitle, "IsoJet dRmax,ST>2TeV", 100, 0, 10 );
+    sprintf(histTitle, "Jet_dRmin_Exc%02d", mult);
+    Jet_dRmin[iHist]      = new TH1F(histTitle, "IsoJet dRmin,ST>2TeV", 100, 0, 10 );
     sprintf(histTitle, "Jet_dRratio_Exc%02d", mult);
     Jet_dRratio[iHist]      = new TH1F(histTitle, "IsoJet dRmax/dRmin,ST>2TeV", 200, 0, 40 );
+    sprintf(histTitle, "nPV_Exc%02d", mult);
+    nPV[iHist]             = new TH1F(histTitle, "nPV", 100, 0, 100 );
 
     //Bkg histograms
     sprintf(histTitle, "mBHbkg_nJet_Exc%02d", mult);
@@ -973,6 +983,8 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
     h_NPV.Fill(NPV);
     NJetPhElMu.Fill(multiplicity);
     NPV_multi.Fill(multiplicity,NPV);
+    multi_NPV.Fill(NPV,multiplicity);
+    nPV[multiplicity-2]->Fill(NPV);
 
 
         //debug info and big ST printing
@@ -1098,6 +1110,8 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
                         if(JetIso[iJet] && JetEt[iJet]>PtCut) Jet_Eta[iHist]->Fill(JetEta[iJet]);
                     }
                     Jet_dRratio[iHist]->Fill( dRmax/dRmin);
+                    Jet_dRmax[iHist]->Fill( dRmax);
+                    Jet_dRmin[iHist]->Fill( dRmin);
                 }
             }
         }
@@ -1157,7 +1171,7 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
           if (multiplicity >= iHist+2 && passMetCut) {
                 stIncHist[iHist]->Fill(ST);  
                 if (Met<2.5*std::sqrt(ST)){
-                    mBH_IncHist[iHist]->Fill(mBH_cut);
+                    mBH_IncHist[iHist]->Fill(mBH_jet);
                 }
           }
           if (multiplicity_tight == iHist+2 && passMetCut_tight) stExcHist_tight[iHist]->Fill(ST_tight);
@@ -1315,6 +1329,7 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
   MET.Write();
   OurMET.Write();
   NPV_multi.Write();
+  multi_NPV.Write();
   JetNHF.Write();
   JetNHF_pt1.Write();
   JetNHF_pt2.Write();
@@ -1383,7 +1398,10 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
   for (int iHist = 0; iHist<multMax-2; ++iHist) {
     Jet_Eta[iHist]->Write();
     Jet_dR[iHist]->Write();
+    Jet_dRmax[iHist]->Write();
+    Jet_dRmin[iHist]->Write();
     Jet_dRratio[iHist]->Write();
+    nPV[iHist]->Write();
   }
 
 
