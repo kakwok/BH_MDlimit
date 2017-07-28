@@ -1,5 +1,5 @@
 # BH_MDlimit
-## 1) Generate the signal flat Tuple
+## 1) Generate the signal flatTuple
 **On Lxplus**  
 Input: a eos path like `/store/group/phys_exotica/BH_RunII/BlackMax_NTuple/`  
 Change the `$DIR` in the shell script, prepare a directory called `"SignalFlatTuple/ModelClass"`
@@ -12,14 +12,17 @@ mkdir ModelClass
 cd ../
 python GenSignalFlatTuple_v2.py
 ```
-## 1) Generate other flatTuple
+## 1.1) Generate other flatTuple
 The `flatTupleScripts/flatuplize.py` script generate and execute the commands for flatTuplizing BH NTuples
 ```
 mkdir QCD
 cd QCD
+cp ../flatTupleScripts/flatuplize.py .
+```
+Make different directories corresponding to different energy cuts if needed.
+```
 python flatuplize.py
 ```
-
 ## 2) Find the Optimal (Stmin,Nmin) points
 ####i) Ingredients:
 * Theoretic cross sections: e.g.`QBH_xsection.txt` or `BlackMax_xsection.txt`  
