@@ -1,31 +1,29 @@
 import os
 import glob
+import time
 
-#/mnt/hadoop/store/user/kakwok/QCD/QCD_Pt_15to30_TuneCUETP8M1_13TeV_pythia8/BHnTuples_QCD_Pt_15to30_TuneCUETP8M1_13TeV_pythia8/170508_161813/0000/ntuple_output_100.root
-Topdir = "/mnt/hadoop/users/mkwok/BH/QCD"
-#dataSetNames =[]
-#dataSetNames.append("QCD_Pt_15to30_TuneCUETP8M1_13TeV_pythia8")
-#dataSetNames.append("QCD_Pt_30to50_TuneCUETP8M1_13TeV_pythia8")
-#dataSetNames.append("QCD_Pt_50to80_TuneCUETP8M1_13TeV_pythia8")
-#dataSetNames.append("QCD_Pt_80to120_TuneCUETP8M1_13TeV_pythia8")
-#dataSetNames.append("QCD_Pt_120to170_TuneCUETP8M1_13TeV_pythia8")
-#dataSetNames.append("QCD_Pt_170to300_TuneCUETP8M1_13TeV_pythia8")
-#dataSetNames.append("QCD_Pt_300to470_TuneCUETP8M1_13TeV_pythia8")
-#dataSetNames.append("QCD_Pt_470to600_TuneCUETP8M1_13TeV_pythia8")
-#dataSetNames.append("QCD_Pt_600to800_TuneCUETP8M1_13TeV_pythia8")
-#dataSetNames.append("QCD_Pt_800to1000_TuneCUETP8M1_13TeV_pythia8")
-#dataSetNames.append("QCD_Pt_1000to1400_TuneCUETP8M1_13TeV_pythia8")
-#dataSetNames.append("QCD_Pt_1400to1800_TuneCUETP8M1_13TeV_pythia8")
-#dataSetNames.append("QCD_Pt_1800to2400_TuneCUETP8M1_13TeV_pythia8")
-#dataSetNames.append("QCD_Pt_2400to3200_TuneCUETP8M1_13TeV_pythia8")
-#dataSetNames.append("QCD_Pt_3200toInf_TuneCUETP8M1_13TeV_pythia8")
+#Topdir = "/eos/cms/store/user/kakwok/BH/NTuple/QCD/"
+Topdir = "/eos/cms/store/user/bravo/bhSphAna/qcd/"
 
-dataSetNames = glob.glob("%s/*.root"%Topdir)
+isFromCameron = True
+
+#dataSetNames = glob.glob("%s/*.root"%Topdir)  # old style trees
+ptBins = glob.glob("%s*"%Topdir)
+dataSetNames  = []
+for ptBin in ptBins:
+    dataSetNames.append( ptBin + "/trees/*.root")
+#    dataSetNames = /eos/cms/store/user/bravo/bhSphAna/qcd/pt120to170/trees/*.root
 outputTag = "Moriond17_May11"
+pTcuts    = [30,50,70,90] 
 
-for dataSetName in dataSetNames:
-	datasetTag = dataSetName.split("/")[-1].replace(".root","").replace("BHnTuple_","")
-	cmd  = "root -l -q '../BHflatTuplizer.cc+(\"%s\",\"BHflatTuple_%s_%s_%sGeV.root\",\"../empty.txt\",false,%s)'"%(dataSetName,datasetTag,outputTag,70,70.0)
-	cmd += ">> %s_flatuplize.log &"%dataSetName.split("/")[-1].replace(".root","") 
-	print cmd
-	#os.system(cmd)
+for pTcut in pTcuts:
+    for dataSetName in dataSetNames:
+        #datasetTag = dataSetName.split("/")[-1].replace(".root","").replace("BHnTuple_","")
+        datasetTag =  dataSetName.split("/")[-4]+"_"+dataSetName.split("/")[-3]
+        cmd  = "root -l -q '../BHflatTuplizer.cc+(\"%s\",\"./%sGeV/BHflatTuple_%s_%s_%sGeV.root\",\"../empty.txt\",false,%s)'"%(dataSetName,pTcut,datasetTag,outputTag,pTcut,float(pTcut))
+        cmd += ">> %s_flatuplize.log &"%(datasetTag) 
+        print cmd
+        os.system(cmd)
+        time.sleep(0.5)
+    time.sleep(0.5)
+    #os.system(cmd)
