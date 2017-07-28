@@ -10,11 +10,14 @@ mkdir SignalFlatTuple
 cd SignalFlatTuple
 mkdir ModelClass
 cd ../
-sh GenSignalFlatTuple.sh
+python GenSignalFlatTuple_v2.py
 ```
-**On brux6**, please modify and use
+## 1) Generate other flatTuple
+The `flatTupleScripts/flatuplize.py` script generate and execute the commands for flatTuplizing BH NTuples
 ```
-python GenSignalFlatTuple.py
+mkdir QCD
+cd QCD
+python flatuplize.py
 ```
 
 ## 2) Find the Optimal (Stmin,Nmin) points
