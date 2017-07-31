@@ -37,7 +37,7 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
   bool dumpIsoInfo   = false ;
   int  nDumpedEvents = 0     ;
   bool useMETcut     = false ;
-  int  nBin      = 130   ; // 100 for 100 GeV bin, 1000 for 10 GeV bin in ST histograms 
+  int  nBin          = 260   ; // 100 for 100 GeV bin, 1000 for 10 GeV bin in ST histograms 
   int  STlow         = 0     ; // Lower bound of ST histogram: 500 GeV or 0 GeV
   int  STup          = 13000 ; // Upper bound of ST histogram
 
@@ -69,7 +69,7 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
 
 
   TProfile NPV_multi = TProfile("NPV_multi","NPV_multi",10,2,12,"s"); 
-  TH2F  multi_NPV    = TH2F("multi_NPV","multi_NPV",50,0,50,10,2,12); 
+  TProfile  multi_NPV= TProfile("multi_NPV","multi_NPV",50,0,50,"s"); 
 
   TH2F METvsMHT                            = TH2F("METvsMHT"                            ,  "METvsMHT"                        ,  1000,  0.,  20000.,  1000,  0.,  20000.);
   TH2F METvsMHTinc2                        = TH2F("METvsMHTinc2"                        ,  "METvsMHTinc2"                    ,  1000,  0.,  20000.,  1000,  0.,  20000.);
@@ -169,7 +169,6 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
   TH1F *Jet_dRmax[multMax-2];
   TH1F *Jet_dRmin[multMax-2];
   TH1F *Jet_dRratio[multMax-2];
-  TH1F *nPV[multMax-2];
 
   // ST histograms
   TH1F *stIncHist[multMax-2];
@@ -229,8 +228,6 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
     Jet_dRmin[iHist]      = new TH1F(histTitle, "IsoJet dRmin,ST>2TeV", 100, 0, 10 );
     sprintf(histTitle, "Jet_dRratio_Exc%02d", mult);
     Jet_dRratio[iHist]      = new TH1F(histTitle, "IsoJet dRmax/dRmin,ST>2TeV", 200, 0, 40 );
-    sprintf(histTitle, "nPV_Exc%02d", mult);
-    nPV[iHist]             = new TH1F(histTitle, "nPV", 100, 0, 100 );
 
     //Bkg histograms
     sprintf(histTitle, "mBHbkg_nJet_Exc%02d", mult);
@@ -339,6 +336,8 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
   int        runno                     ;
   long long  evtno                     ;
   int        lumiblock                 ;
+  double     EW                 ;
+  double     EvT                 ;
   float      JetE [25]                ;
   float      JetEt [25]                ;
   float      JetPt [25]                ;
@@ -450,6 +449,8 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
   TBranch  *b_MetPy                       ;
   TBranch  *b_runno                     ;
   TBranch  *b_evtno                     ;
+  TBranch  *b_EW                     ;
+  TBranch  *b_EvT                     ;
   TBranch  *b_lumiblock                 ;
   TBranch  *b_mBH                   ;
   TBranch  *b_NPV                   ;
@@ -489,6 +490,8 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
   chain.SetBranchAddress( "runno"                     ,  &runno                     ,  &b_runno                     );
   chain.SetBranchAddress( "lumiblock"                 ,  &lumiblock                 ,  &b_lumiblock                 );
   chain.SetBranchAddress( "evtno"                     ,  &evtno                     ,  &b_evtno                     );
+  chain.SetBranchAddress( "EW"                        ,  &EW                        ,  &b_EW                     );
+  chain.SetBranchAddress( "EvT"                       ,  &EvT                       ,  &b_EvT                     );
   chain.SetBranchAddress( "JetE"                      ,  JetE                       ,  &b_JetE                     );
   chain.SetBranchAddress( "JetEt"                     ,  JetEt                      ,  &b_JetEt                     );
   chain.SetBranchAddress( "JetPt"                     ,  JetPt                      ,  &b_JetPt                     );
@@ -608,7 +611,7 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
        ) ) continue;
      }
 
-    h_mBH.Fill(mBH);
+    h_mBH.Fill(mBH,EW);
         // use Yutaro's method for applying the event filter
         passMETfilterList=true;
         auto rItr(list.find(runno));
@@ -659,20 +662,20 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
                 if (JetEt[iJet] && dR(JetEta[iJet],JetPhi[iJet], MuEta[iMuon], MuPhi[iMuon]) < 0.3) {
                   JetMuonEt+=MuEt[iMuon];
                   if (MuEt[iMuon]<150) {
-                    MuonJetIso1.Fill(MuEt[iMuon]/JetEt[iJet]);
-                    MuonJetoverlapdR1.Fill(dR(JetEta[iJet],JetPhi[iJet],MuEta[iMuon],MuPhi[iMuon]));
+                    MuonJetIso1.Fill(MuEt[iMuon]/JetEt[iJet],EW);
+                    MuonJetoverlapdR1.Fill(dR(JetEta[iJet],JetPhi[iJet],MuEta[iMuon],MuPhi[iMuon]),EW);
                   }
                   if (150<=MuEt[iMuon] && MuEt[iMuon]<250) {
-                    MuonJetIso2.Fill(MuEt[iMuon]/JetEt[iJet]);
-                    MuonJetoverlapdR2.Fill(dR(JetEta[iJet],JetPhi[iJet],MuEta[iMuon],MuPhi[iMuon]));
+                    MuonJetIso2.Fill(MuEt[iMuon]/JetEt[iJet],EW);
+                    MuonJetoverlapdR2.Fill(dR(JetEta[iJet],JetPhi[iJet],MuEta[iMuon],MuPhi[iMuon]),EW);
                   }
                   if (250<=MuEt[iMuon] && MuEt[iMuon]<400) {
-                    MuonJetIso3.Fill(MuEt[iMuon]/JetEt[iJet]);
-                    MuonJetoverlapdR3.Fill(dR(JetEta[iJet],JetPhi[iJet],MuEta[iMuon],MuPhi[iMuon]));
+                    MuonJetIso3.Fill(MuEt[iMuon]/JetEt[iJet],EW);
+                    MuonJetoverlapdR3.Fill(dR(JetEta[iJet],JetPhi[iJet],MuEta[iMuon],MuPhi[iMuon]),EW);
                   }
                   if (400<=MuEt[iMuon]) {
-                    MuonJetIso4.Fill(MuEt[iMuon]/JetEt[iJet]);
-                    MuonJetoverlapdR4.Fill(dR(JetEta[iJet],JetPhi[iJet],MuEta[iMuon],MuPhi[iMuon]));
+                    MuonJetIso4.Fill(MuEt[iMuon]/JetEt[iJet],EW);
+                    MuonJetoverlapdR4.Fill(dR(JetEta[iJet],JetPhi[iJet],MuEta[iMuon],MuPhi[iMuon]),EW);
                   }
                   if (JetMuonEt>0.8*JetEt[iJet]) {
                     passIso = false;
@@ -695,20 +698,20 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
                 if (dR(JetEta[iJet],JetPhi[iJet], EleEta[iElectron], ElePhi[iElectron]) < 0.3) {
                   JetElectronEt+=EleEt[iElectron];
                   if (EleEt[iElectron]<150) {
-                    ElectronJetIso1.Fill(EleEt[iElectron]/JetEt[iJet]);
-                    ElectronJetoverlapdR1.Fill(dR(JetEta[iJet],JetPhi[iJet],EleEta[iElectron],ElePhi[iElectron]));
+                    ElectronJetIso1.Fill(EleEt[iElectron]/JetEt[iJet],EW);
+                    ElectronJetoverlapdR1.Fill(dR(JetEta[iJet],JetPhi[iJet],EleEta[iElectron],ElePhi[iElectron]),EW);
                   }
                   if (150<=EleEt[iElectron] && EleEt[iElectron]<250) {
-                    ElectronJetIso2.Fill(EleEt[iElectron]/JetEt[iJet]);
-                    ElectronJetoverlapdR2.Fill(dR(JetEta[iJet],JetPhi[iJet],EleEta[iElectron],ElePhi[iElectron]));
+                    ElectronJetIso2.Fill(EleEt[iElectron]/JetEt[iJet],EW);
+                    ElectronJetoverlapdR2.Fill(dR(JetEta[iJet],JetPhi[iJet],EleEta[iElectron],ElePhi[iElectron]),EW);
                   }
                   if (250<=EleEt[iElectron] && EleEt[iElectron]<400) {
-                    ElectronJetIso3.Fill(EleEt[iElectron]/JetEt[iJet]);
-                    ElectronJetoverlapdR3.Fill(dR(JetEta[iJet],JetPhi[iJet],EleEta[iElectron],ElePhi[iElectron]));
+                    ElectronJetIso3.Fill(EleEt[iElectron]/JetEt[iJet],EW);
+                    ElectronJetoverlapdR3.Fill(dR(JetEta[iJet],JetPhi[iJet],EleEta[iElectron],ElePhi[iElectron]),EW);
                   }
                   if (400<=EleEt[iElectron]) {
-                    ElectronJetIso4.Fill(EleEt[iElectron]/JetEt[iJet]);
-                    ElectronJetoverlapdR4.Fill(dR(JetEta[iJet],JetPhi[iJet],EleEta[iElectron],ElePhi[iElectron]));
+                    ElectronJetIso4.Fill(EleEt[iElectron]/JetEt[iJet],EW);
+                    ElectronJetoverlapdR4.Fill(dR(JetEta[iJet],JetPhi[iJet],EleEta[iElectron],ElePhi[iElectron]),EW);
                   }
                   if (JetElectronEt > 0.7*JetEt[iJet] ) {
                     passIso = false;
@@ -731,20 +734,20 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
                 if (dR(JetEta[iJet],JetPhi[iJet], PhEta[iPhoton], PhPhi[iPhoton]) < 0.3) {
                   JetPhotonEt+=PhEt[iPhoton];
                   if (PhEt[iPhoton]<150) {
-                    PhotonJetIso1.Fill(PhEt[iPhoton]/JetEt[iJet]);
-                    PhotonJetoverlapdR1.Fill(dR(JetEta[iJet],JetPhi[iJet],PhEta[iPhoton],PhPhi[iPhoton]));
+                    PhotonJetIso1.Fill(PhEt[iPhoton]/JetEt[iJet],EW);
+                    PhotonJetoverlapdR1.Fill(dR(JetEta[iJet],JetPhi[iJet],PhEta[iPhoton],PhPhi[iPhoton]),EW);
                   }
                   if (150<=PhEt[iPhoton] && PhEt[iPhoton]<250) {
-                    PhotonJetIso2.Fill(PhEt[iPhoton]/JetEt[iJet]);
-                    PhotonJetoverlapdR2.Fill(dR(JetEta[iJet],JetPhi[iJet],PhEta[iPhoton],PhPhi[iPhoton]));
+                    PhotonJetIso2.Fill(PhEt[iPhoton]/JetEt[iJet],EW);
+                    PhotonJetoverlapdR2.Fill(dR(JetEta[iJet],JetPhi[iJet],PhEta[iPhoton],PhPhi[iPhoton]),EW);
                   }
                   if (250<=PhEt[iPhoton] && PhEt[iPhoton]<400) {
-                    PhotonJetIso3.Fill(PhEt[iPhoton]/JetEt[iJet]);
-                    PhotonJetoverlapdR3.Fill(dR(JetEta[iJet],JetPhi[iJet],PhEta[iPhoton],PhPhi[iPhoton]));
+                    PhotonJetIso3.Fill(PhEt[iPhoton]/JetEt[iJet],EW);
+                    PhotonJetoverlapdR3.Fill(dR(JetEta[iJet],JetPhi[iJet],PhEta[iPhoton],PhPhi[iPhoton]),EW);
                   }
                   if (400<=PhEt[iPhoton]) {
-                    PhotonJetIso4.Fill(PhEt[iPhoton]/JetEt[iJet]);
-                    PhotonJetoverlapdR4.Fill(dR(JetEta[iJet],JetPhi[iJet],PhEta[iPhoton],PhPhi[iPhoton]));
+                    PhotonJetIso4.Fill(PhEt[iPhoton]/JetEt[iJet],EW);
+                    PhotonJetoverlapdR4.Fill(dR(JetEta[iJet],JetPhi[iJet],PhEta[iPhoton],PhPhi[iPhoton]),EW);
                   }
                   if (JetPhotonEt>0.5*JetEt[iJet] ) {
                     passIso = false;
@@ -791,21 +794,21 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
         if(JetIso[iJet]){
             if(iLeadingIsoJet==-1){
                 iLeadingIsoJet = iJet;
-                JetNHF.Fill(JetNeutHadFrac[iJet]);
-                JetCHF.Fill(JetChgHadFrac[iJet]);
+                JetNHF.Fill(JetNeutHadFrac[iJet],EW);
+                JetCHF.Fill(JetChgHadFrac[iJet],EW);
                 if(JetNeutHadFrac[iJet]<=0.001){
-                    JetNHF_pt1.Fill(JetPt[iJet]);
-                    JetNHF_eta1.Fill(JetEta[iJet]);
+                    JetNHF_pt1.Fill(JetPt[iJet],EW);
+                    JetNHF_eta1.Fill(JetEta[iJet],EW);
                 }else{
-                    JetNHF_pt2.Fill(JetPt[iJet]);
-                    JetNHF_eta2.Fill(JetEta[iJet]);
+                    JetNHF_pt2.Fill(JetPt[iJet],EW);
+                    JetNHF_eta2.Fill(JetEta[iJet],EW);
                 }
                 if(JetChgHadFrac[iJet]<0.99){
-                    JetCHF_pt1.Fill(JetPt[iJet]);
-                    JetCHF_eta1.Fill(JetEta[iJet]);
+                    JetCHF_pt1.Fill(JetPt[iJet],EW);
+                    JetCHF_eta1.Fill(JetEta[iJet],EW);
                 }else{
-                    JetCHF_pt2.Fill(JetPt[iJet]);
-                    JetCHF_eta2.Fill(JetEta[iJet]);
+                    JetCHF_pt2.Fill(JetPt[iJet],EW);
+                    JetCHF_eta2.Fill(JetEta[iJet],EW);
                 }
 
             }
@@ -814,7 +817,7 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
 
     isLeadingJetTight = TightJets[iLeadingIsoJet];
     if (!isLeadingJetTight) continue;
-    NJets.Fill(multiplicity);
+    NJets.Fill(multiplicity,EW);
         //Electrons
         if (eventHasElectron) {
           for (int iElectron = 0; iElectron < 25; ++iElectron) {
@@ -980,12 +983,10 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
             else break;
           }
         }
-    h_NPV.Fill(NPV);
-    NJetPhElMu.Fill(multiplicity);
-    NPV_multi.Fill(multiplicity,NPV);
-    multi_NPV.Fill(NPV,multiplicity);
-    nPV[multiplicity-2]->Fill(NPV);
-
+    h_NPV.Fill(NPV,EW);
+    NJetPhElMu.Fill(multiplicity,EW);
+    NPV_multi.Fill(multiplicity,NPV,EW);
+    multi_NPV.Fill(NPV,multiplicity,EW);
 
         //debug info and big ST printing
         if (debugFlag) cout << "    Met from PAT collection is: " << Met << endl;
@@ -1003,28 +1004,28 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
           passMetCut_tight=false;
         }
         if (ST>1500) {
-          if (ST<3000) METoverSumET.Fill(Met/ST);
-          if (ST_tight>1500 && ST_tight<3000) METoverSumET_tight.Fill(Met/ST_tight);
+          if (ST<3000) METoverSumET.Fill(Met/ST,EW);
+          if (ST_tight>1500 && ST_tight<3000) METoverSumET_tight.Fill(Met/ST_tight,EW);
           if (multiplicity>=2){
-            METoverSumETinc2.Fill(Met/ST);
-            if (multiplicity_tight >=2 && ST_tight>1500 && ST_tight<3000)METoverSumETinc2_tight.Fill(Met/ST_tight);
-            if (multiplicity_tight >=3 && ST_tight>1500 && ST_tight<3000)METoverSumETinc3_tight.Fill(Met/ST_tight);
-            if (multiplicity_tight >=4 && ST_tight>1500 && ST_tight<3000)METoverSumETinc4_tight.Fill(Met/ST_tight);
-            if (multiplicity_tight >=5 && ST_tight>1500 && ST_tight<3000)METoverSumETinc5_tight.Fill(Met/ST_tight);
-            if (multiplicity_tight >=6 && ST_tight>1500 && ST_tight<3000)METoverSumETinc6_tight.Fill(Met/ST_tight);
-            if (multiplicity_tight >=7 && ST_tight>1500 && ST_tight<3000)METoverSumETinc7_tight.Fill(Met/ST_tight);
-            if (multiplicity_tight >=8 && ST_tight>1500 && ST_tight<3000)METoverSumETinc8_tight.Fill(Met/ST_tight);
-            if (multiplicity_tight >=9 && ST_tight>1500 && ST_tight<3000)METoverSumETinc9_tight.Fill(Met/ST_tight);
-            if (multiplicity_tight >=10 && ST_tight>1500 && ST_tight<3000)METoverSumETinc10_tight.Fill(Met/ST_tight);
-            if (eventHasMuon)                                           METoverSumETinc2hasMuon.Fill(Met/ST);
-            if (eventHasPhoton)                                         METoverSumETinc2hasPhoton.Fill(Met/ST);
-            if (eventHasElectron)                                       METoverSumETinc2hasElectron.Fill(Met/ST);
-            if (!eventHasMuon && !eventHasPhoton && !eventHasElectron)  METoverSumETinc2onlyJets.Fill(Met/ST);
+            METoverSumETinc2.Fill(Met/ST,EW);
+            if (multiplicity_tight >=2 && ST_tight>1500 && ST_tight<3000)METoverSumETinc2_tight.Fill(Met/ST_tight,EW);
+            if (multiplicity_tight >=3 && ST_tight>1500 && ST_tight<3000)METoverSumETinc3_tight.Fill(Met/ST_tight,EW);
+            if (multiplicity_tight >=4 && ST_tight>1500 && ST_tight<3000)METoverSumETinc4_tight.Fill(Met/ST_tight,EW);
+            if (multiplicity_tight >=5 && ST_tight>1500 && ST_tight<3000)METoverSumETinc5_tight.Fill(Met/ST_tight,EW);
+            if (multiplicity_tight >=6 && ST_tight>1500 && ST_tight<3000)METoverSumETinc6_tight.Fill(Met/ST_tight,EW);
+            if (multiplicity_tight >=7 && ST_tight>1500 && ST_tight<3000)METoverSumETinc7_tight.Fill(Met/ST_tight,EW);
+            if (multiplicity_tight >=8 && ST_tight>1500 && ST_tight<3000)METoverSumETinc8_tight.Fill(Met/ST_tight,EW);
+            if (multiplicity_tight >=9 && ST_tight>1500 && ST_tight<3000)METoverSumETinc9_tight.Fill(Met/ST_tight,EW);
+            if (multiplicity_tight >=10 && ST_tight>1500 && ST_tight<3000)METoverSumETinc10_tight.Fill(Met/ST_tight,EW);
+            if (eventHasMuon)                                           METoverSumETinc2hasMuon.Fill(Met/ST,EW);
+            if (eventHasPhoton)                                         METoverSumETinc2hasPhoton.Fill(Met/ST,EW);
+            if (eventHasElectron)                                       METoverSumETinc2hasElectron.Fill(Met/ST,EW);
+            if (!eventHasMuon && !eventHasPhoton && !eventHasElectron)  METoverSumETinc2onlyJets.Fill(Met/ST,EW);
             if (multiplicity_tight>=2 && ST_tight>1500 && ST_tight<3000) {
-              if (eventHasMuon)                                           METoverSumETinc2hasMuon_tight.Fill(Met/ST_tight);
-              if (eventHasPhoton)                                         METoverSumETinc2hasPhoton_tight.Fill(Met/ST_tight);
-              if (eventHasElectron)                                       METoverSumETinc2hasElectron_tight.Fill(Met/ST_tight);
-              if (!eventHasMuon && !eventHasPhoton && !eventHasElectron)  METoverSumETinc2onlyJets_tight.Fill(Met/ST_tight);
+              if (eventHasMuon)                                           METoverSumETinc2hasMuon_tight.Fill(Met/ST_tight,EW);
+              if (eventHasPhoton)                                         METoverSumETinc2hasPhoton_tight.Fill(Met/ST_tight,EW);
+              if (eventHasElectron)                                       METoverSumETinc2hasElectron_tight.Fill(Met/ST_tight,EW);
+              if (!eventHasMuon && !eventHasPhoton && !eventHasElectron)  METoverSumETinc2onlyJets_tight.Fill(Met/ST_tight,EW);
             }
           }
         }
@@ -1033,12 +1034,12 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
         ST += Met;
         ST_tight += Met;
         if (passMetCut){
-          stHist.Fill(ST);
-          stHistMHT.Fill(STMHTnoMET);
+          stHist.Fill(ST,EW);
+          stHistMHT.Fill(STMHTnoMET,EW);
         }
         if (passMetCut_tight){
-          stHist_tight.Fill(ST_tight);
-          stHistMHT_tight.Fill(STMHTnoMET_tight);
+          stHist_tight.Fill(ST_tight,EW);
+          stHistMHT_tight.Fill(STMHTnoMET_tight,EW);
         }
 
         // Calculate mBH from iso objects
@@ -1102,16 +1103,16 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
                            //Look only at isolated jets entering ST calculation
                            if(JetIso[iJet] && JetIso[jJet] && JetEt[iJet]>PtCut && JetEt[jJet]>PtCut && iJet != jJet){
                                 double dR_ij =  dR(JetEta[iJet],JetPhi[iJet],JetEta[jJet],JetPhi[jJet]);
-                                Jet_dR[iHist]->Fill( dR_ij );
+                                Jet_dR[iHist]->Fill( dR_ij ,EW);
                                 if(dR_ij > dRmax) dRmax = dR_ij;
                                 if(dR_ij < dRmin) dRmin = dR_ij;
                            }
                         }
-                        if(JetIso[iJet] && JetEt[iJet]>PtCut) Jet_Eta[iHist]->Fill(JetEta[iJet]);
+                        if(JetIso[iJet] && JetEt[iJet]>PtCut) Jet_Eta[iHist]->Fill(JetEta[iJet],EW);
                     }
-                    Jet_dRratio[iHist]->Fill( dRmax/dRmin);
-                    Jet_dRmax[iHist]->Fill( dRmax);
-                    Jet_dRmin[iHist]->Fill( dRmin);
+                    Jet_dRratio[iHist]->Fill( dRmax/dRmin,EW);
+                    Jet_dRmax[iHist]->Fill( dRmax,EW);
+                    Jet_dRmin[iHist]->Fill( dRmin,EW);
                 }
             }
         }
@@ -1121,84 +1122,84 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
             if(multiplicity == iHist+2 && passMetCut){
                 //if((mBH_cut>=2800 && mBH_cut<3300 )|| (mBH_cut>4700 && mBH_cut<=5500)){
                 if((mBH_cut>=2500 && mBH_cut<2700 )|| (mBH_cut>3900 && mBH_cut<=5000)){
-                    mBHbkg_nJet[iHist]->Fill(nIsoJet);
-                    mBHbkg_nEle[iHist]->Fill(nIsoEle);
-                    mBHbkg_nMuon[iHist]->Fill(nIsoMuon);
-                    mBHbkg_nPhoton[iHist]->Fill(nIsoPhoton);
-                    mBHbkg_MET[iHist]->Fill(Met);
+                    mBHbkg_nJet[iHist]->Fill(nIsoJet,EW);
+                    mBHbkg_nEle[iHist]->Fill(nIsoEle,EW);
+                    mBHbkg_nMuon[iHist]->Fill(nIsoMuon,EW);
+                    mBHbkg_nPhoton[iHist]->Fill(nIsoPhoton,EW);
+                    mBHbkg_MET[iHist]->Fill(Met,EW);
                     for (int iJet = 0; iJet < 25; ++iJet) {
                         if(JetIso[iJet] && JetPt[iJet]>PtCut){
-                            mBHbkg_JetpT[iHist]->Fill(JetPt[iJet]);
-                            mBHbkg_JetEta[iHist]->Fill(JetEta[iJet]);
-                            mBHbkg_JetEt[iHist]->Fill(JetEt[iJet]);
+                            mBHbkg_JetpT[iHist]->Fill(JetPt[iJet],EW);
+                            mBHbkg_JetEta[iHist]->Fill(JetEta[iJet],EW);
+                            mBHbkg_JetEt[iHist]->Fill(JetEt[iJet],EW);
                         }
                     }
-                    mBHbkg_ST[iHist]->Fill(ST);
-                    if(Met>=50.0)  mBHbkg_STmet50[iHist]->Fill(ST);
-                    if(Met>=100.0) mBHbkg_STmet100[iHist]->Fill(ST);
-                    if(Met>=200.0) mBHbkg_STmet200[iHist]->Fill(ST);
+                    mBHbkg_ST[iHist]->Fill(ST,EW);
+                    if(Met>=50.0)  mBHbkg_STmet50[iHist]->Fill(ST,EW);
+                    if(Met>=100.0) mBHbkg_STmet100[iHist]->Fill(ST,EW);
+                    if(Met>=200.0) mBHbkg_STmet200[iHist]->Fill(ST,EW);
                 }
                 if(mBH_cut>=2700 && mBH_cut<=3900 ){
-                    mBHsig_nJet[iHist]->Fill(nIsoJet);
-                    mBHsig_nEle[iHist]->Fill(nIsoEle);
-                    mBHsig_nMuon[iHist]->Fill(nIsoMuon);
-                    mBHsig_nPhoton[iHist]->Fill(nIsoPhoton);
-                    mBHsig_MET[iHist]->Fill(Met);
+                    mBHsig_nJet[iHist]->Fill(nIsoJet,EW);
+                    mBHsig_nEle[iHist]->Fill(nIsoEle,EW);
+                    mBHsig_nMuon[iHist]->Fill(nIsoMuon,EW);
+                    mBHsig_nPhoton[iHist]->Fill(nIsoPhoton,EW);
+                    mBHsig_MET[iHist]->Fill(Met,EW);
                     for (int iJet = 0; iJet < 25; ++iJet) {
                         if(JetIso[iJet] && JetPt[iJet]>PtCut){
-                            mBHsig_JetpT[iHist]->Fill(JetPt[iJet]);
-                            mBHsig_JetEta[iHist]->Fill(JetEta[iJet]);
-                            mBHsig_JetEt[iHist]->Fill(JetEt[iJet]);
+                            mBHsig_JetpT[iHist]->Fill(JetPt[iJet],EW);
+                            mBHsig_JetEta[iHist]->Fill(JetEta[iJet],EW);
+                            mBHsig_JetEt[iHist]->Fill(JetEt[iJet],EW);
                         }
                     }
-                    mBHsig_ST[iHist]->Fill(ST);
-                    if(Met>=50.0)  mBHsig_STmet50[iHist]->Fill(ST);
-                    if(Met>=100.0) mBHsig_STmet100[iHist]->Fill(ST);
-                    if(Met>=200.0) mBHsig_STmet200[iHist]->Fill(ST);
+                    mBHsig_ST[iHist]->Fill(ST,EW);
+                    if(Met>=50.0)  mBHsig_STmet50[iHist]->Fill(ST,EW);
+                    if(Met>=100.0) mBHsig_STmet100[iHist]->Fill(ST,EW);
+                    if(Met>=200.0) mBHsig_STmet200[iHist]->Fill(ST,EW);
 
                 }
             }
         }
         for (int iHist = 0; iHist<multMax-2; ++iHist) {
           if (multiplicity == iHist+2 && passMetCut) {
-                stExcHist[iHist]->Fill(ST);
+                stExcHist[iHist]->Fill(ST,EW);
                 // 2.5*sqrt(ST) ~ <3 sigma of MET resolution
                 if( Met < 2.5*std::sqrt(ST)){
-                    mBH_ExcHist[iHist]->Fill(mBH_cut);
-                    mBH_jet_ExcHist[iHist]->Fill(mBH_jet);
+                    mBH_ExcHist[iHist]->Fill(mBH_cut,EW);
+                    mBH_jet_ExcHist[iHist]->Fill(mBH_jet,EW);
                 }
           }
           if (multiplicity >= iHist+2 && passMetCut) {
-                stIncHist[iHist]->Fill(ST);  
+                stIncHist[iHist]->Fill(ST,EW);  
                 if (Met<2.5*std::sqrt(ST)){
-                    mBH_IncHist[iHist]->Fill(mBH_jet);
+                    mBH_IncHist[iHist]->Fill(mBH_jet,EW);
                 }
           }
-          if (multiplicity_tight == iHist+2 && passMetCut_tight) stExcHist_tight[iHist]->Fill(ST_tight);
-          if (multiplicity_tight >= iHist+2 && passMetCut_tight) stIncHist_tight[iHist]->Fill(ST_tight);
+          if (multiplicity_tight == iHist+2 && passMetCut_tight) stExcHist_tight[iHist]->Fill(ST_tight,EW);
+          if (multiplicity_tight >= iHist+2 && passMetCut_tight) stIncHist_tight[iHist]->Fill(ST_tight,EW);
         }
         for (int iHist = 0; iHist<multMax-2; ++iHist) {
-          if (multiplicity == iHist+2 && passMetCut) stExcHistMHT[iHist]->Fill(STMHTnoMET);
-          if (multiplicity >= iHist+2 && passMetCut) stIncHistMHT[iHist]->Fill(STMHTnoMET);
-          if (multiplicity_tight == iHist+2 && passMetCut_tight) stExcHistMHT_tight[iHist]->Fill(STMHTnoMET_tight);
-          if (multiplicity_tight >= iHist+2 && passMetCut_tight) stIncHistMHT_tight[iHist]->Fill(STMHTnoMET_tight);
+          if (multiplicity == iHist+2 && passMetCut) stExcHistMHT[iHist]->Fill(STMHTnoMET,EW);
+          if (multiplicity >= iHist+2 && passMetCut) stIncHistMHT[iHist]->Fill(STMHTnoMET,EW);
+          if (multiplicity_tight == iHist+2 && passMetCut_tight) stExcHistMHT_tight[iHist]->Fill(STMHTnoMET_tight,EW);
+          if (multiplicity_tight >= iHist+2 && passMetCut_tight) stIncHistMHT_tight[iHist]->Fill(STMHTnoMET_tight,EW);
         }
-    MET.Fill(Met);
-    OurMET.Fill(OurMet);
-        METvsMHT.Fill(OurMet,Met);
-        METvsMHT_tight.Fill(OurMet_tight,Met);
+    MET.Fill(Met,EW);
+    OurMET.Fill(OurMet,EW);
+        METvsMHT.Fill(OurMet,Met,EW);
+        METvsMHT_tight.Fill(OurMet_tight,Met,EW);
         if (multiplicity>=2){
-          METvsMHTinc2.Fill(OurMet,Met);
-          METvsMHTinc2_tight.Fill(OurMet_tight,Met);
-          if (eventHasMuon)                                           METvsMHTinc2hasMuon.Fill(OurMet, Met);
-          if (eventHasPhoton)                                         METvsMHTinc2hasPhoton.Fill(OurMet, Met);
-          if (eventHasElectron)                                       METvsMHTinc2hasElectron.Fill(OurMet, Met);
-          if (!eventHasMuon && !eventHasPhoton && !eventHasElectron)  METvsMHTinc2onlyJets.Fill(OurMet, Met);
+          METvsMHTinc2.Fill(OurMet,Met,EW);
+          METvsMHTinc2_tight.Fill(OurMet_tight,Met,EW);
+          if (eventHasMuon)                                           METvsMHTinc2hasMuon.Fill(OurMet, Met,EW);
+          if (eventHasPhoton)                                         METvsMHTinc2hasPhoton.Fill(OurMet, Met,EW);
+          if (eventHasElectron)                                       METvsMHTinc2hasElectron.Fill(OurMet, Met,EW);
+          if (!eventHasMuon && !eventHasPhoton && !eventHasElectron)  METvsMHTinc2onlyJets.Fill(OurMet, Met,EW);
           if (multiplicity_tight>=2) {
-            if (eventHasMuon)                                           METvsMHTinc2hasMuon_tight.Fill(OurMet_tight, Met);
-            if (eventHasPhoton)                                         METvsMHTinc2hasPhoton_tight.Fill(OurMet_tight, Met);
-            if (eventHasElectron)                                       METvsMHTinc2hasElectron_tight.Fill(OurMet_tight, Met);
-            if (!eventHasMuon && !eventHasPhoton && !eventHasElectron)  METvsMHTinc2onlyJets_tight.Fill(OurMet_tight, Met);
+            if (eventHasMuon)                                           METvsMHTinc2hasMuon_tight.Fill(OurMet_tight, Met,EW);
+            if (eventHasPhoton)                                         METvsMHTinc2hasPhoton_tight.Fill(OurMet_tight, Met,EW);
+            if (eventHasElectron)                                       METvsMHTinc2hasElectron_tight.Fill(OurMet_tight, Met,EW);
+            if (!eventHasMuon && !eventHasPhoton && !eventHasElectron)  METvsMHTinc2onlyJets_tight.Fill(OurMet_tight, Met,EW);
           }
         }
         if (dumpIsoInfo && fabs(OurMet-Met)>300) {
@@ -1401,7 +1402,6 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
     Jet_dRmax[iHist]->Write();
     Jet_dRmin[iHist]->Write();
     Jet_dRratio[iHist]->Write();
-    nPV[iHist]->Write();
   }
 
 
