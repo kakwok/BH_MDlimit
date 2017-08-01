@@ -68,8 +68,8 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
   TH1F JetCHF_eta2 = TH1F("JetCHF_eta2","JetCHF_eta2",50,-5,5);
 
 
-  TProfile NPV_multi = TProfile("NPV_multi","NPV_multi",10,2,12,"s"); 
-  TProfile  multi_NPV= TProfile("multi_NPV","multi_NPV",50,0,50,"s"); 
+  TProfile NPV_multi = TProfile("NPV_multi","NPV_multi",10,2,12,""); 
+  TProfile  multi_NPV= TProfile("multi_NPV","multi_NPV",50,0,50,""); 
 
   TH2F METvsMHT                            = TH2F("METvsMHT"                            ,  "METvsMHT"                        ,  1000,  0.,  20000.,  1000,  0.,  20000.);
   TH2F METvsMHTinc2                        = TH2F("METvsMHTinc2"                        ,  "METvsMHTinc2"                    ,  1000,  0.,  20000.,  1000,  0.,  20000.);
@@ -627,7 +627,7 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
         }
         if (!passMETfilterList) cout << "ERROR! This event should be filtered!" << endl;
         if ( runno == 254790 && (lumiblock==211 || lumiblock==395) ) {
-          sprintf(messageBuffer, "Event in lumiblock that could not be filtered skipped: run number %d lumi section %d event number %%lld\n", runno, lumiblock, evtno);
+          sprintf(messageBuffer, "Event in lumiblock that could not be filtered skipped: run number %d lumi section %d event number %lld\n", runno, lumiblock, evtno);
           outTextFile << messageBuffer;
           continue;
         }
