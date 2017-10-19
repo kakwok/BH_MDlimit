@@ -30,7 +30,8 @@ def getMI(Stmin,Nmin,MILimit):
 				return MIdata
 		else:
 			print "Cannot find MILimit input file"
+			break
 	if not MIdata:
-		print "Cannot find matching ST and N in MI limit!"
+		print "Cannot find matching ST and N in MI limit! Requested Nmin=%s, STmin=%s"%(Nmin,Stmin)
 		return [StTar,0,0,0,0,0,0]	
 
