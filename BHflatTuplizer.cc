@@ -28,9 +28,9 @@ std::map<unsigned, std::set<unsigned> > readEventList(char const* _fileName);
 //  metListFilename = txt of un-filtered MET events
 //  PtCut        = Lower PtCut for Jet/Electron/Photon/MET
 //  is2016H      = Switch to recover 2016H trigger inefficiency
-void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string metListFilename, bool is2016H, double PtCut) {
+void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string metListFilename, bool is2016H, double PtCut, double EW_input=1) {
   std::map<unsigned, std::set<unsigned> > list = readEventList(metListFilename.c_str());
-  bool isData        = true;
+  bool isData        = false;
   bool debugFlag     = false ;
   int  eventsToDump  = 25    ;  // if debugFlag is true, then stop once the number of dumped events reaches eventsToDump
   bool dumpBigEvents = false ;
@@ -169,6 +169,8 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
   TH1F *Jet_dRmax[multMax-2];
   TH1F *Jet_dRmin[multMax-2];
   TH1F *Jet_dRratio[multMax-2];
+  TH1F *Jet_ST_ISR[multMax-2];
+  TH1F *Jet_ST_FSR[multMax-2];
 
   // ST histograms
   TH1F *stIncHist[multMax-2];
@@ -228,6 +230,10 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
     Jet_dRmin[iHist]      = new TH1F(histTitle, "IsoJet dRmin,ST>2TeV", 100, 0, 10 );
     sprintf(histTitle, "Jet_dRratio_Exc%02d", mult);
     Jet_dRratio[iHist]      = new TH1F(histTitle, "IsoJet dRmax/dRmin,ST>2TeV", 200, 0, 40 );
+    sprintf(histTitle, "Jet_ST_ISR_Exc%02d", mult);
+    Jet_ST_ISR[iHist]      = new TH1F(histTitle, "IsoJet abs(#eta)>3,ST>2TeV", nBin , STlow, STup );
+    sprintf(histTitle, "Jet_ST_FSR_Exc%02d", mult);
+    Jet_ST_FSR[iHist]      = new TH1F(histTitle, "IsoJet dRmin<0.1,ST>2TeV", nBin , STlow, STup );
 
     //Bkg histograms
     sprintf(histTitle, "mBHbkg_nJet_Exc%02d", mult);
@@ -336,7 +342,7 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
   int        runno                     ;
   long long  evtno                     ;
   int        lumiblock                 ;
-  double     EW                 ;
+  double     EW = EW_input                ;
   double     EvT                 ;
   float      JetE [25]                ;
   float      JetEt [25]                ;
@@ -548,6 +554,11 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
     if (iEvent%100000==0) {
       cout << std::fixed << std::setw(3) << std::setprecision(1) << (float(iEvent)/float(nEvents))*100 << "% done: Scanned " << iEvent << " events." << endl;
     }
+    //if (iEvent%10!=0) {
+    //  continue;
+    //}
+
+
 
     // reset variables
     isTightJet          = false ;
@@ -1097,6 +1108,7 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
                 if(nBH_jet>=multiplicity){
                     double dRmax = 0;
                     double dRmin = 999;
+                    bool   hasISR = false;
 
                     for (int iJet = 0; iJet < 25; ++iJet) {
                         for (int jJet = 0; jJet < 25; ++jJet) {
@@ -1109,7 +1121,10 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
                            }
                         }
                         if(JetIso[iJet] && JetEt[iJet]>PtCut) Jet_Eta[iHist]->Fill(JetEta[iJet],EW);
+                        if(JetIso[iJet] && JetEt[iJet]>PtCut && fabs(JetEta[iJet])>3.0){ hasISR=true;}
                     }
+                    if(hasISR)                   Jet_ST_ISR[iHist]->Fill(ST,EW);
+                    if(dRmin<1.0 and dRmin!=999) Jet_ST_FSR[iHist]->Fill(ST,EW);
                     Jet_dRratio[iHist]->Fill( dRmax/dRmin,EW);
                     Jet_dRmax[iHist]->Fill( dRmax,EW);
                     Jet_dRmin[iHist]->Fill( dRmin,EW);
@@ -1402,6 +1417,8 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
     Jet_dRmax[iHist]->Write();
     Jet_dRmin[iHist]->Write();
     Jet_dRratio[iHist]->Write();
+    Jet_ST_ISR[iHist]->Write();
+    Jet_ST_FSR[iHist]->Write();
   }
 
 
