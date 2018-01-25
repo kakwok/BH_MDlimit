@@ -30,7 +30,7 @@ std::map<unsigned, std::set<unsigned> > readEventList(char const* _fileName);
 //  is2016H      = Switch to recover 2016H trigger inefficiency
 void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string metListFilename, bool is2016H, double PtCut, double EW_input=1) {
   std::map<unsigned, std::set<unsigned> > list = readEventList(metListFilename.c_str());
-  bool isData        = false;
+  bool isData        = true;
   bool debugFlag     = false ;
   int  eventsToDump  = 25    ;  // if debugFlag is true, then stop once the number of dumped events reaches eventsToDump
   bool dumpBigEvents = false ;
@@ -58,6 +58,7 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
   TH1F OurMET   = TH1F("OurMET"  ,"OurMET"  ,130,0,13000);
   TH1F JetNHF   = TH1F("JetNHF","JetNHF",1000,0,1);
   TH1F JetCHF   = TH1F("JetCHF","JetCHF",1000,0,1);
+  TH1F h_JetEta   = TH1F("JetEta","JetEta",120,-6,6);
   TH1F JetNHF_pt1  = TH1F("JetNHF_pt1" ,"JetNHF_pt1",160,0,8000);
   TH1F JetNHF_eta1 = TH1F("JetNHF_eta1","JetNHF_eta1",50,-5,5);
   TH1F JetNHF_pt2 = TH1F("JetNHF_pt2","JetNHF_pt2",160,0,8000);
@@ -221,7 +222,7 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
 
     //ISR/FSR study
     sprintf(histTitle, "Jet_Eta_Exc%02d", mult);
-    Jet_Eta[iHist]      = new TH1F(histTitle, "IsoJet Eta,ST>2TeV", 50, -5,5 );
+    Jet_Eta[iHist]      = new TH1F(histTitle, "IsoJet Eta,ST>2TeV", 50, -6,6 );
     sprintf(histTitle, "Jet_dR_Exc%02d", mult);
     Jet_dR[iHist]      = new TH1F(histTitle, "IsoJet dR,ST>2TeV", 100, 0, 10 );
     sprintf(histTitle, "Jet_dRmax_Exc%02d", mult);
@@ -666,7 +667,7 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
           }
           if (fabs(JetEta[iJet])>3 && JetNeutEMFrac[iJet] < 0.9 && JetNNeutConstituents[iJet] > 10) isTightJet=true;
           TightJets[iJet]=isTightJet;
-          if (JetEt[iJet]>PtCut) {
+          if (JetEt[iJet]>PtCut && fabs(JetEta[iJet])<5.0 ) {
             for (int iMuon = 0; iMuon < 25; ++iMuon ) {
               if (MuEt[iMuon]>PtCut && MuPFdBiso[iMuon]<0.15) {
                 eventHasMuon = true;
@@ -783,6 +784,7 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
             nIsoJet+=1;
             Px += JetPx[iJet];
             Py += JetPy[iJet];
+            h_JetEta.Fill(JetEta[iJet],EW);
 
             if(isTightJet) {
               ST_tight += JetEt[iJet];
@@ -836,7 +838,7 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
             passIso_tight=true;
             if (EleEt[iElectron]>PtCut) {
               for (int iJet = 0; iJet < 25; ++iJet ) {
-                if (JetEt[iJet]>PtCut && dR(EleEta[iElectron],ElePhi[iElectron], JetEta[iJet], JetPhi[iJet]) < 0.3) {
+               if (JetEt[iJet]>PtCut && fabs(JetEta[iJet])<5 && dR(EleEta[iElectron],ElePhi[iElectron], JetEta[iJet], JetPhi[iJet]) < 0.3) {
                   if (EleEt[iElectron]<0.7*JetEt[iJet]) {
                     passIso = false;
                     EleIso[iElectron]=false;
@@ -897,7 +899,7 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
             passIso=true;
             if (PhEt[iPhoton]>PtCut) {
               for (int iJet = 0; iJet < 25; ++iJet ) {
-                if (JetEt[iJet]>PtCut && dR(PhEta[iPhoton],PhPhi[iPhoton], JetEta[iJet], JetPhi[iJet]) < 0.3) {
+                if (JetEt[iJet]>PtCut && fabs(JetEta[iJet])<5 && dR(PhEta[iPhoton],PhPhi[iPhoton], JetEta[iJet], JetPhi[iJet]) < 0.3) {
                   if (PhEt[iPhoton]<0.5*JetEt[iJet]) {
                     passIso = false;
                     PhotonIso[iPhoton]=false;
@@ -1346,6 +1348,7 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
   OurMET.Write();
   NPV_multi.Write();
   multi_NPV.Write();
+  h_JetEta.Write();
   JetNHF.Write();
   JetNHF_pt1.Write();
   JetNHF_pt2.Write();
