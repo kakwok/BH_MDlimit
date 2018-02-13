@@ -30,7 +30,7 @@ std::map<unsigned, std::set<unsigned> > readEventList(char const* _fileName);
 //  is2016H      = Switch to recover 2016H trigger inefficiency
 void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string metListFilename, bool is2016H, double PtCut, double EW_input=1) {
   std::map<unsigned, std::set<unsigned> > list = readEventList(metListFilename.c_str());
-  bool isData        = true;
+  bool isData        = false;
   bool debugFlag     = false ;
   int  eventsToDump  = 25    ;  // if debugFlag is true, then stop once the number of dumped events reaches eventsToDump
   bool dumpBigEvents = false ;
@@ -59,6 +59,8 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
   TH1F JetNHF   = TH1F("JetNHF","JetNHF",1000,0,1);
   TH1F JetCHF   = TH1F("JetCHF","JetCHF",1000,0,1);
   TH1F h_JetEta   = TH1F("JetEta","JetEta",120,-6,6);
+  TH1F MuonJetET  = TH1F("MuonJetET" ,"MuonJetET",200,0,2000);
+  TH1F JetMuonET  = TH1F("JetMuonET" ,"JetMuonET",200,0,2000);
   TH1F JetNHF_pt1  = TH1F("JetNHF_pt1" ,"JetNHF_pt1",160,0,8000);
   TH1F JetNHF_eta1 = TH1F("JetNHF_eta1","JetNHF_eta1",50,-5,5);
   TH1F JetNHF_pt2 = TH1F("JetNHF_pt2","JetNHF_pt2",160,0,8000);
@@ -704,6 +706,11 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
                 }
               }
             }
+            // plot Jet's ET and muon's ET in case they overlapped
+            if (JetMuonEt != 0 && JetMuonEt<0.8*JetEt[iJet]){
+                MuonJetET.Fill(JetEt[iJet],EW); //ET of the jets with muon inside
+                JetMuonET.Fill(JetMuonEt,EW); //Total Muons ET inside jets
+            }
             for (int iElectron = 0; iElectron < 25; ++iElectron ) {
               if (EleEt[iElectron]>PtCut) {
                 eventHasElectron = true;
@@ -780,6 +787,10 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
 
             if (debugFlag) outTextFile << "    JetEt for jet number " << iJet << " is: " << JetEt[iJet] << endl;
             ST += JetEt[iJet];
+            //subtract Muon's overlapped energy from Jet's ET
+            if( JetMuonEt !=0 && JetMuonEt<0.8*JetEt[iJet]) {
+                ST -= JetMuonEt;
+            }
             multiplicity+=1;
             nIsoJet+=1;
             Px += JetPx[iJet];
@@ -1472,6 +1483,8 @@ void BHflatTuplizer(std::string inFilename, std::string outFilename, std::string
   METoverSumETinc2onlyJets_tight.Write();
 
   outRootFile->cd("Isolation");
+  MuonJetET.Write();
+  JetMuonET.Write();
   MuonJetIso1.Write();
   MuonJetIso2.Write();
   MuonJetIso3.Write();
