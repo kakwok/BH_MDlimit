@@ -30,7 +30,8 @@ def getZbi(n_on, n_off, tau):
 #Input constants :
 
 
-IntLumi =  2263.5   	# Integrated Luminosity in pb^-1
+#IntLumi =  2263.5   	# Integrated Luminosity in pb^-1 for 2015
+IntLumi =  36500.0   	# Integrated Luminosity in pb^-1
 
 
 #eospath="/store/group/phys_exotica/BH_RunII/QBH_RS1_NTuple/"
@@ -42,24 +43,27 @@ eospath="" 				#Use empty path for newer FlatTuple with Ngen information
 #XsecDB="QBH_ADD_xsection.txt"
 #XsecDB="SB_xsection_extra.txt"
 #XsecDB="BlackMax_xsection.txt"
-XsecDB="Charybdis_BH10_xsection.txt"
-#XsecDB="Charybdis_SB_xsection.txt"
-MILimit="MILimits.txt"
-ModelClass="CYBD"				#or BM, BM_full, SB, QBH_ADD, QBH_RS1, CYBD
-NScanMin  = 2
-NScanMax  = 10
+#XsecDB="Charybdis_xsection_2016.txt"
+#XsecDB="Charybdis_BH10_xsection.txt"
+#XsecDB="Sphaleron_xsection.txt"
+XsecDB="Charybdis_SB_xsection_newMD.txt"
+MILimit="MILimit_2016.txt"
+
+ModelClass="SB"				#or BM, BM_full, SB, QBH_ADD, QBH_RS1, CYBD, Sphaleron
+NScanMin  = 3
+NScanMax  = 11
 SaveDump = True
 ##############################
 
-eosHeader="/afs/cern.ch/user/k/kakwok/eos/cms"
-#eosHeader="root://eoscms.cern.ch/"
-data  ="all2015C+D_NoMetCut+NewMETFilter.root"
+eosHeader="/eos/cms"
+#data  ="/afs/cern.ch/user/k/kakwok/work/public/Blackhole/BH2016/flatTuple/BHflatTuple_2016BtoH_CleanTail_70GeV.root"
+#data  ="all2015C+D_NoMetCut+NewMETFilter.root"
+data  ="./mBH_Exc9/70GeV/BHflatTuple_2016BtoH_preApprove_70GeV.root"
 DataRoot  =TFile("%s"%data)
 DataDir   =DataRoot.Get("ST")
 
-fitNormRanges = FitAndNormRange("FitNormRanges.txt")
-#fitNormRanges.showFitRanges()
-#fitNormRanges.showNormRanges()
+fitNormRanges = FitAndNormRange("FitNormRanges_2016.txt")
+#fitNormRanges = FitAndNormRange("FitNormRanges.txt")
 
 Output   = open("%s"%argv[2],"w")
 Output.write("Model  MD   n  MBH | STMin   Nmin  | ExpLimit     Nsignal    Acept   StLimit  Xsec(fb) |  xsec(fb): Obs -2sig -1sig Exp +1sig +2sig  \n")
@@ -131,7 +135,7 @@ for PathAndFile in MasspointListInput:
 
 		# Calculate normalization factor for fitting functions
 		if SaveDump:
-			Dump.write("STmin | Sig   Accptance | Expected limit \n")
+			Dump.write("Nmin STmin | Sig   Accptance | Expected limit \n")
 		# Scan through ST
 		ExpLimit_list   =[]
 		Zbi_list   =[]
@@ -157,7 +161,7 @@ for PathAndFile in MasspointListInput:
 			STMin_list.append(stmin*100)
 			Yield_list.append(sig)
 			if SaveDump:
-				Dump.write("%s %.3f %.3f %.3f \n" % (stmin*100, sig, Acc , ExpLimit))
+				Dump.write("%i %s %.3f %.3f %.3f \n" % (i, stmin*100, sig, Acc , ExpLimit))
 			LimitBest2D[iFile].Fill(i, stmin*100, ExpLimit)
 		if not ExpLimit_list:
 			continue
@@ -171,6 +175,12 @@ for PathAndFile in MasspointListInput:
 	STopt = nST_list[   nExpLimit_list.index(MinLimit)]
 	Yield = nYield_list[nExpLimit_list.index(MinLimit)]
 	Nopt  = nMin_list  [nExpLimit_list.index(MinLimit)]
+
+	if SaveDump:
+		Dump.write("For signal=%s: \n"   % signal)
+		Dump.write("nSTlist = %s: \n"    % nST_list)
+		Dump.write("nMinlist = %s: \n"   % nMin_list)
+		Dump.write("nMinlist = %s: \n"   % nExpLimit_list)
 
 	Acceptance = Yield / (IntLumi*Xsec)
 	MInorm     = (IntLumi/1000)*Acceptance
