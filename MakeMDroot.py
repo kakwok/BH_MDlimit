@@ -76,6 +76,8 @@ Exp_limit   =[]
 
 Modellines =[]
 Modellines_exp =[]
+Modellines_OneSig =[]
+Modellines_TwoSig =[]
 iModel=0
 iModellines=0
 for M in Modelpoints:
@@ -138,12 +140,26 @@ for M in Modelpoints:
         Modellines_exp.append( TGraph())
         Modellines_exp[iModellines].SetName("%s_n%s_exp"%(M.ModelID,M.n))   
         Modellines_exp[iModellines].SetTitle("%s_n%s_exp"%(M.ModelID,M.n))  
+        Modellines_OneSig.append( TGraphAsymmErrors())
+        Modellines_OneSig[iModellines].SetName("%s_n%s_OneSig"%(M.ModelID,M.n))   
+        Modellines_OneSig[iModellines].SetTitle("%s_n%s_OneSig"%(M.ModelID,M.n))  
+        Modellines_TwoSig.append( TGraphAsymmErrors())
+        Modellines_TwoSig[iModellines].SetName("%s_n%s_TwoSig"%(M.ModelID,M.n))   
+        Modellines_TwoSig[iModellines].SetTitle("%s_n%s_TwoSig"%(M.ModelID,M.n))  
 
         minMBH_obs= M.getMinMBH("Obs")
         minMBH_exp= M.getMinMBH("Exp")
+        minMBH_OneSigP=max(M.getMinMBH("OneSigP"),M.getMinMBH("OneSigM"))
+        minMBH_OneSigM=min(M.getMinMBH("OneSigP"),M.getMinMBH("OneSigM"))
+        minMBH_TwoSigP=max(M.getMinMBH("TwoSigP"),M.getMinMBH("TwoSigM"))
+        minMBH_TwoSigM=min(M.getMinMBH("TwoSigP"),M.getMinMBH("TwoSigM"))
         if not minMBH_obs==0.0:
             Modellines[iModellines].SetPoint(Modellines[iModellines].GetN(), M.MD/1000., minMBH_obs/1000.)
             Modellines_exp[iModellines].SetPoint(Modellines_exp[iModellines].GetN(), M.MD/1000., minMBH_exp/1000.)
+            Modellines_OneSig[iModellines].SetPoint(     Modellines_OneSig[iModellines].GetN()  , M.MD/1000., minMBH_obs/1000.)
+            Modellines_TwoSig[iModellines].SetPoint(     Modellines_TwoSig[iModellines].GetN()  , M.MD/1000., minMBH_obs/1000.)
+            Modellines_OneSig[iModellines].SetPointError(Modellines_OneSig[iModellines].GetN()-1, 0, 0      , (minMBH_obs-minMBH_OneSigM)/1000., (minMBH_OneSigP-minMBH_obs)/1000.)
+            Modellines_TwoSig[iModellines].SetPointError(Modellines_TwoSig[iModellines].GetN()-1, 0, 0      , (minMBH_obs-minMBH_TwoSigM)/1000., (minMBH_TwoSigP-minMBH_obs)/1000.)
         print "Adding Model line: %s_n%s" %(M.ModelID,M.n)
         print "MD=%s Min MBH=%s"% (M.MD, minMBH_obs)
         PlotTxt.write("For Model line  %s_n%s: \n" % (M.ModelID, M.n))
@@ -156,14 +172,26 @@ for M in Modelpoints:
         if( M.MD != M_pre.MD and M.n == M_pre.n and M.ModelID == M_pre.ModelID):
             minMBH_obs = M.getMinMBH("Obs")
             minMBH_exp = M.getMinMBH("Exp")
+            minMBH_OneSigP=max(M.getMinMBH("OneSigP"),M.getMinMBH("OneSigM"))
+            minMBH_OneSigM=min(M.getMinMBH("OneSigP"),M.getMinMBH("OneSigM"))
+            minMBH_TwoSigP=max(M.getMinMBH("TwoSigP"),M.getMinMBH("TwoSigM"))
+            minMBH_TwoSigM=min(M.getMinMBH("TwoSigP"),M.getMinMBH("TwoSigM"))
             if not minMBH_obs==0.0:
                 Modellines[iModellines].SetPoint(Modellines[iModellines].GetN(), M.MD/1000., minMBH_obs/1000.)
                 Modellines_exp[iModellines].SetPoint(Modellines_exp[iModellines].GetN(), M.MD/1000., minMBH_exp/1000.)
+                Modellines_OneSig[iModellines].SetPoint(     Modellines_OneSig[iModellines].GetN()  , M.MD/1000., minMBH_obs/1000.)
+                Modellines_TwoSig[iModellines].SetPoint(     Modellines_TwoSig[iModellines].GetN()  , M.MD/1000., minMBH_obs/1000.)
+                Modellines_OneSig[iModellines].SetPointError(Modellines_OneSig[iModellines].GetN()-1, 0, 0      , (minMBH_obs-minMBH_OneSigM)/1000., (minMBH_OneSigP-minMBH_obs)/1000.)
+                Modellines_TwoSig[iModellines].SetPointError(Modellines_TwoSig[iModellines].GetN()-1, 0, 0      , (minMBH_obs-minMBH_TwoSigM)/1000., (minMBH_TwoSigP-minMBH_obs)/1000.)
             print "MD=%s Min MBH=%s"% (M.MD, minMBH_obs)
             PlotTxt.write("MD = %s   MinMBH = %s\n" % (M.MD, minMBH_obs))
         else:
             minMBH_obs = M.getMinMBH("Obs")
             minMBH_exp = M.getMinMBH("Exp")
+            minMBH_OneSigP=max(M.getMinMBH("OneSigP"),M.getMinMBH("OneSigM"))
+            minMBH_OneSigM=min(M.getMinMBH("OneSigP"),M.getMinMBH("OneSigM"))
+            minMBH_TwoSigP=max(M.getMinMBH("TwoSigP"),M.getMinMBH("TwoSigM"))
+            minMBH_TwoSigM=min(M.getMinMBH("TwoSigP"),M.getMinMBH("TwoSigM"))
             Modellines.append( TGraph())
             iModellines = iModellines+1
             Modellines[iModellines].SetName("%s_n%s"%(M.ModelID,M.n))   
@@ -172,10 +200,21 @@ for M in Modelpoints:
             Modellines_exp.append( TGraph())
             Modellines_exp[iModellines].SetName("%s_n%s_exp"%(M.ModelID,M.n))   
             Modellines_exp[iModellines].SetTitle("%s_n%s_exp"%(M.ModelID,M.n))  
+            Modellines_OneSig.append( TGraphAsymmErrors())
+            Modellines_OneSig[iModellines].SetName("%s_n%s_OneSig"%(M.ModelID,M.n))   
+            Modellines_OneSig[iModellines].SetTitle("%s_n%s_OneSig"%(M.ModelID,M.n))  
+            Modellines_TwoSig.append( TGraphAsymmErrors())
+            Modellines_TwoSig[iModellines].SetName("%s_n%s_TwoSig"%(M.ModelID,M.n))   
+            Modellines_TwoSig[iModellines].SetTitle("%s_n%s_TwoSig"%(M.ModelID,M.n))  
+
 
             if not minMBH_obs==0.0:
                 Modellines[iModellines].SetPoint(Modellines[iModellines].GetN(), M.MD/1000., minMBH_obs/1000.)
                 Modellines_exp[iModellines].SetPoint(Modellines_exp[iModellines].GetN(), M.MD/1000., minMBH_exp/1000.)
+                Modellines_OneSig[iModellines].SetPoint(     Modellines_OneSig[iModellines].GetN()  , M.MD/1000., minMBH_obs/1000.)
+                Modellines_TwoSig[iModellines].SetPoint(     Modellines_TwoSig[iModellines].GetN()  , M.MD/1000., minMBH_obs/1000.)
+                Modellines_OneSig[iModellines].SetPointError(Modellines_OneSig[iModellines].GetN()-1, 0, 0      , (minMBH_obs-minMBH_OneSigM)/1000., (minMBH_OneSigP-minMBH_obs)/1000.)
+                Modellines_TwoSig[iModellines].SetPointError(Modellines_TwoSig[iModellines].GetN()-1, 0, 0      , (minMBH_obs-minMBH_TwoSigM)/1000., (minMBH_TwoSigP-minMBH_obs)/1000.)
             print "Adding Model line: %s_n%s" %(M.ModelID,M.n)
             print "MD=%s Min MBH=%s"% (M.MD, minMBH_obs)
             PlotTxt.write("For Model line  %s_n%s: \n" % (M.ModelID, M.n))
@@ -193,6 +232,11 @@ for line in Modellines:
     Modellines_exp[iline].SetMarkerStyle(kFullCircle)
     Modellines_exp[iline].SetMarkerColor(kBlack)
 
+    Modellines_OneSig[iline].SetLineColor(kGreen)
+    Modellines_OneSig[iline].SetFillColor(kGreen)
+    Modellines_TwoSig[iline].SetLineColor(kOrange)
+    Modellines_TwoSig[iline].SetFillColor(kOrange)
+
     leg = TLegend(0.7,0.7,0.9,0.9)
     leg.AddEntry( line,"Observed","lp")
     leg.AddEntry( Modellines_exp[iline],"Expected","lp")
@@ -207,6 +251,8 @@ for line in Modellines:
     c1.Write()
     line.Write()
     Modellines_exp[iline].Write()
+    Modellines_OneSig[iline].Write()
+    Modellines_TwoSig[iline].Write()
     c1.Clear()
     iline+=1
 print "Found %i model lines" % len(Modellines)

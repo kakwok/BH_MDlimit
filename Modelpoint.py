@@ -11,53 +11,61 @@ from math import *
 
 
 class Modelpoint:
-	def __init__(self, ModelID, MD, n):
-		self.ModelID = ModelID
-		self.MD      = MD
-		self.n       = n
-		self.key     = str(ModelID)+"_MD"+str(MD)+"_n"+str(n)
-		self.linekey = str(ModelID)+"_n"+str(n)
-		self.datalist=[]
-		self.Zbi_graph = TGraph()
+    def __init__(self, ModelID, MD, n):
+        self.ModelID = ModelID
+        self.MD      = MD
+        self.n       = n
+        self.key     = str(ModelID)+"_MD"+str(MD)+"_n"+str(n)
+        self.linekey = str(ModelID)+"_n"+str(n)
+        self.datalist=[]
+        self.Zbi_graph = TGraph()
 
-	def addData(self,data):
-		self.datalist.append(data)
+    def addData(self,data):
+        self.datalist.append(data)
 
-	def printData(self):
-	#data   = [MBH, Stmin, nmin, Zbi,signal,Xsec,accpt,Stlimit,Obs,m2sig,m1sig,Exp,p1sig,p2sig]
-		for data in self.datalist:
-			print data
-	def addZbiGraph(self,g):
-		self.Zbi_graph = g
-	def getZbiGraph(self):
-		return self.Zbi_graph
-	def getMinMBH(self,ObsOrExp):
-		Extrapolate=0
-		#       MBH  Xsec(th) Xsec(limit)
-		last = []
-		MBHminData = self.datalist[0]
-		for data in self.datalist:
-			if( "Obs" in ObsOrExp):
-				new = [data[0], data[5],data[8]]	
-			elif ("Exp" in ObsOrExp):
-				new = [data[0], data[5],data[11]]	
-				
-			if data == self.datalist[0]:
-				last=new
-				continue
-			# Extrapolate if: Theoretical xsec in last step is excluded, but in this step cannot be excluded
-			#  [0] = MBH  [1] = Xsec(Theory)  [2] = Xsec(Limit)
-			if (last[1]>last[2] and new[1]<new[2]):
-				#print "%s %s %s %s %s %s" %(last[0],last[1],last[2], new[0],new[1],new[2])
-				m_theory = (log(new[1],10)-log(last[1],10))/(new[0]-last[0])	
-				m_limit =  (log(new[2],10)-log(last[2],10))/(new[0]-last[0])	
-				Extrapolate = last[0] + (log(last[1],10)-log(last[2],10))/(m_limit-m_theory)
-				#print "new = ",new
-				#print "last=", last
-				#print "Last MBH  =%s    Delta = %s" % ( last[0], (last[1]-last[2])/(m_limit-m_theory) )
-				return float(Extrapolate)
-			else:
-				last=new 
-		if Extrapolate==0:
-			print "Cannot find MinMBH for %s"%self.key
-			return float(Extrapolate)
+    def printData(self):
+    #data   = [MBH, Stmin, nmin, Zbi,signal,Xsec,accpt,Stlimit,Obs,m2sig,m1sig,Exp,p1sig,p2sig]
+        for data in self.datalist:
+            print data
+    def addZbiGraph(self,g):
+        self.Zbi_graph = g
+    def getZbiGraph(self):
+        return self.Zbi_graph
+    def getMinMBH(self,ObsOrExp):
+        Extrapolate=0
+        #       MBH  Xsec(th) Xsec(limit)
+        last = []
+        MBHminData = self.datalist[0]
+        for data in self.datalist:
+            if( "Obs" in ObsOrExp):
+                new = [data[0], data[5],data[8]]    
+            elif ("Exp" in ObsOrExp):
+                new = [data[0], data[5],data[11]]   
+            elif ("OneSigP" in ObsOrExp):
+                new = [data[0], data[5],data[12]]   
+            elif ("OneSigM" in ObsOrExp):
+                new = [data[0], data[5],data[10]]   
+            elif ("TwoSigP" in ObsOrExp):
+                new = [data[0], data[5],data[13]]   
+            elif ("TwoSigM" in ObsOrExp):
+                new = [data[0], data[5],data[9]]   
+                
+            if data == self.datalist[0]:
+                last=new
+                continue
+            # Extrapolate if: Theoretical xsec in last step is excluded, but in this step cannot be excluded
+            #  [0] = MBH  [1] = Xsec(Theory)  [2] = Xsec(Limit)
+            if (last[1]>last[2] and new[1]<new[2]):
+                #print "%s %s %s %s %s %s" %(last[0],last[1],last[2], new[0],new[1],new[2])
+                m_theory = (log(new[1],10)-log(last[1],10))/(new[0]-last[0])    
+                m_limit =  (log(new[2],10)-log(last[2],10))/(new[0]-last[0])    
+                Extrapolate = last[0] + (log(last[1],10)-log(last[2],10))/(m_limit-m_theory)
+                #print "new = ",new
+                #print "last=", last
+                #print "Last MBH  =%s    Delta = %s" % ( last[0], (last[1]-last[2])/(m_limit-m_theory) )
+                return float(Extrapolate)
+            else:
+                last=new 
+        if Extrapolate==0:
+            print "Cannot find MinMBH for %s"%self.key
+            return float(Extrapolate)
