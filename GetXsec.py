@@ -15,27 +15,32 @@ def getXsec(PathAndFile , lookupfiles, modelClass):
     masspoint = []
     if(os.path.exists(PathAndFile)and os.path.exists(lookupfiles)):
     #if(os.path.exists("./SignalFlatTuple/%s"%signal)and os.path.exists(lookupfiles)):
-        signal = PathAndFile.split("/")[2]
+        signal = PathAndFile.split("/")[-1]
         if("Sphaleron" in modelClass):
-            #format: BHflatTuple_Sphaleron_PEF_1.root
-            masspoint.append("SPHA")#Model = SPHA
-            masspoint.append(9000)  #MD    = 9000
+            #format: BHflatTuple_Sphaleron_PEF_1_Espha_10.root
+            Espha = signal.split("_")[-1].replace(".root","")
+            masspoint.append("SPHA")        #Model = SPHA
+            masspoint.append(float(Espha))  #MD    = 9000
             PEF = float(signal.split("_")[3].replace(".root","").replace("p","."))
-            masspoint.append(PEF)  #MBH   = PEF 
-            masspoint.append(6)     #n     = 6
-            print "Looking for x sec of Sphalaron of PEF=%s" % PEF  
+            masspoint.append(PEF)           #MBH   = PEF 
+            masspoint.append(6)             #n     = 6
+            print "Looking for x sec of Sphalaron of Espha=%s" % Espha
             File = open(lookupfiles,"r")
             for line in File:
+                #format: Sphaleron_8TeV_NNPDF30_lo_as_0118_0_pythia8TuneCUETP8M1    0.0991674
+                key  = line.strip().split()[0]
                 xsec = line.strip().split()[1]
-            masspoint.append(float(xsec)*PEF) #7.3 /fb
+                if (key.split("_")[1].replace("TeV","")==Espha):
+                    masspoint.append(float(xsec)*PEF) #7.3 /fb
             return masspoint;
         #if(modelClass=="BM"):
         if("BM" in modelClass):
             #format: BlackMaxLHArecord_BH5_BM_MD9000_MBH11000_n6_FlatTuple.root
-            Model=signal.split("_")[1]
-            MD = signal.split("_")[3]
-            MBH= signal.split("_")[4]
-            n  = signal.split("_")[5]
+            #format2016: BlackHole_BH1_MD-2000_MBH-10000_n-2_TuneCUETP8M1_13TeV-blackmax_FlatTuple_1.root
+            Model=signal.split("_")[1].replace("-","")
+            MD   =signal.split("_")[2].replace("-","")
+            MBH  =signal.split("_")[3].replace("-","")
+            n    =signal.split("_")[4].replace("-","")
             masspoint.append(Model)
             masspoint.append(float(MD.replace("MD","")))
             masspoint.append(float(MBH.replace("MBH","")))
@@ -55,10 +60,11 @@ def getXsec(PathAndFile , lookupfiles, modelClass):
                 print "Cannot find matching mass point in the x-section DB"
         if("CYBD" in modelClass):
             #format: Charybdis_BH2_BM_MD2000_MBH10000_n4_FlatTuple.root
+            #format2016:BlackHole_BH10_MD2000_MBH7000_n4_13TeV_TuneCUETP8M1-charybdis_FlatTuple_1.root 
             Model=signal.split("_")[1]
-            MD = signal.split("_")[3]
-            MBH= signal.split("_")[4]
-            n  = signal.split("_")[5]
+            MD = signal.split("_")[2]
+            MBH= signal.split("_")[3]
+            n  = signal.split("_")[4]
             masspoint.append(Model)
             masspoint.append(float(MD.replace("MD","")))
             masspoint.append(float(MBH.replace("MBH","")))
