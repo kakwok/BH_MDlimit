@@ -33,5 +33,5 @@ def getMI(Stmin,Nmin,MILimit):
 			break
 	if not MIdata:
 		print "Cannot find matching ST and N in MI limit! Requested Nmin=%s, STmin=%s"%(Nmin,Stmin)
-		return [StTar,0,0,0,0,0,0]	
+		return [StTar,999,999,999,999,999,999]	
 
