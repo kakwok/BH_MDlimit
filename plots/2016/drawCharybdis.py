@@ -5,8 +5,8 @@ import CMS_lumi, tdrstyle
 #change the CMS_lumi variables (see CMS_lumi.py)
 CMS_lumi.lumi_13TeV = "35.9 fb^{-1}"
 CMS_lumi.writeExtraText = 1
-CMS_lumi.extraText = "Preliminary"
-#CMS_lumi.extraText = ""
+#CMS_lumi.extraText = "Preliminary"
+CMS_lumi.extraText = ""
 CMS_lumi.lumi_sqrtS = "13 TeV" # used with iPeriod = 0, e.g. for simulation-only plots (default is an empty string)
 iPos = 33
 if( iPos==0 ): CMS_lumi.relPosX = 0.12
@@ -161,10 +161,10 @@ mg.SetMinimum(6.3)
 mg.SetMaximum(10.5)
 
 mg.Draw("ALP")
-mg.GetXaxis().SetTitle("M_{D} (TeV)")
+mg.GetXaxis().SetTitle("M_{D} [TeV]")
 mg.GetXaxis().SetTitleOffset(1.2)
-mg.GetYaxis().SetTitle("Excluded M_{ BH}^{ min} (TeV)")
-mg.GetYaxis().SetTitleOffset(1.2)
+mg.GetYaxis().SetTitle("Excluded M_{ BH}^{ min} [TeV]")
+mg.GetYaxis().SetTitleOffset(1.25)
 mg.SetTitle("")
 
 latex = TLatex()
@@ -189,7 +189,7 @@ n2.SetLineWidth(2)
 n2.SetLineStyle(5)
 
 
-leg= TLegend(0.15,0.15,0.92,0.3, "Charybdis2", "brNDC")
+leg= TLegend(0.145,0.15,0.94,0.3, "Charybdis2", "brNDC")
 leg.SetNColumns(3)
 leg.AddEntry(BH2_n6,"Rotating (C1)","p")
 leg.AddEntry(BH4_n6,"Nonrotating (C2)","p")

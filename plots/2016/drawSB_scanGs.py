@@ -15,7 +15,7 @@ def mapMDtoMS(SBgraph):
         
 #change the CMS_lumi variables (see CMS_lumi.py)
 CMS_lumi.lumi_13TeV = "35.9 fb^{-1}"
-#CMS_lumi.writeExtraText = False
+CMS_lumi.writeExtraText = False
 CMS_lumi.extraText = "Preliminary"
 CMS_lumi.lumi_sqrtS = "13 TeV" # used with iPeriod = 0, e.g. for simulation-only plots (default is an empty string)
 iPos = 11
@@ -77,10 +77,17 @@ mg.SetMaximum(10.5)
 
 mg.Draw("ALP E3")
 mg.GetXaxis().SetTitle("g_{s}")
+mg.GetXaxis().SetTitleSize(0.048)
 mg.GetXaxis().SetLimits(0.2,0.4)
+mg.GetXaxis().SetLabelOffset(0.022)
 mg.GetXaxis().SetTitleOffset(1.2)
+mg.GetXaxis().SetLabelSize(0.045)
+
 mg.GetYaxis().SetTitle("M_{SB} [TeV]")
 mg.GetYaxis().SetTitleSize(0.045)
+mg.GetYaxis().SetTitleOffset(1.1)
+mg.GetYaxis().SetLabelSize(0.045)
+
 mg.SetTitle("")
 mg.Draw("ALP E3")
 
@@ -105,12 +112,12 @@ blankline = 0
 #leg.SetTextSize(0.03)
 #leg.Draw()
 
-leg2= TLegend(0.49,0.65,0.85,0.85, "String balls, M_{S} = 3.6 TeV (Charybdis2)", "brNDC")
+leg2= TLegend(0.4,0.65,0.85,0.85, "String balls, M_{S} = 3.6 TeV (Charybdis2)", "brNDC")
 leg2.AddEntry(SB_n6 ,"Observed ","pl")
 leg2.AddEntry(SB_n6_exp,"Expected","pl")
 leg2.SetBorderSize(0)
 leg2.SetTextFont(42)
-leg2.SetTextSize(0.03)
+leg2.SetTextSize(0.045)
 leg2.Draw()
 
 canvas.SaveAs("SBlimit_gs_scan.pdf")
