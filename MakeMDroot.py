@@ -112,7 +112,7 @@ for M in Modelpoints:
     Exp_limit[iModel].SetName("Expected_%s"%M.key)
 
     #         [  0,    1 ,   2 ,  3 ,   4  ,  5 ,  6  ,   7   , 8 ,  9  ,  10 , 11,  12 , 13  ]
-    #data   = [MBH, Stmin, nmin, Zbi,signal,Xsec,accpt,Stlimit,Obs,m2sig,m1sig,Exp,p1sig,p2sig]
+    #data   = [MBH, Stmin, nmin, Zbi,signal,Xsec,accpt,Stlimit,Exp,m2sig,m1sig,Obs,p1sig,p2sig]
     for data in M.datalist:
         ZbiOpt_grph[iModel].SetPoint(ZbiOpt_grph[iModel].GetN(), data[0]/1000, data[3])
         StOpt_grph[iModel].SetPoint(  StOpt_grph[iModel].GetN(), data[0]/1000, data[1]/1000)
@@ -232,8 +232,8 @@ for line in Modellines:
     Modellines_exp[iline].SetMarkerStyle(kFullCircle)
     Modellines_exp[iline].SetMarkerColor(kBlack)
 
-    Modellines_OneSig[iline].SetLineColor(kGreen)
-    Modellines_OneSig[iline].SetFillColor(kGreen)
+    Modellines_OneSig[iline].SetLineColor(kGreen+1)
+    Modellines_OneSig[iline].SetFillColor(kGreen+1)
     Modellines_TwoSig[iline].SetLineColor(kOrange)
     Modellines_TwoSig[iline].SetFillColor(kOrange)
 
@@ -266,7 +266,8 @@ tdrstyle.setTDRStyle()
 #change the CMS_lumi variables (see CMS_lumi.py)
 CMS_lumi.lumi_13TeV = "35.9 fb^{-1}"
 CMS_lumi.writeExtraText = 1
-CMS_lumi.extraText = "Preliminary"
+CMS_lumi.extraText = ""
+#CMS_lumi.extraText = "Preliminary"
 CMS_lumi.lumi_sqrtS = "13 TeV" # used with iPeriod = 0, e.g. for simulation-only plots (default is an empty string)
 iPos = 11
 if( iPos==0 ): CMS_lumi.relPosX = 0.12
@@ -423,28 +424,32 @@ iColor=1
 drawTR = True
 for i in range(0,len(Exp_limit)):
     TwoSig_limit[i].SetFillColor(kOrange)
-    TwoSig_limit[i].SetLineColor(kOrange)
-    OneSig_limit[i].SetFillColor(kGreen)
-    OneSig_limit[i].SetLineColor(kGreen)
+    TwoSig_limit[i].SetLineColor(kBlack)
+    TwoSig_limit[i].SetLineWidth(2)
+    TwoSig_limit[i].SetLineStyle(2)
+    OneSig_limit[i].SetFillColor(kGreen+1)
+    OneSig_limit[i].SetLineColor(kBlack)
+    OneSig_limit[i].SetLineWidth(2)
+    OneSig_limit[i].SetLineStyle(2)
     Exp_limit[i].SetLineWidth(2)
     Exp_limit[i].SetLineStyle(9)
     Obs_limit[i].SetLineWidth(2)
-    Obs_limit[i].SetLineColor(kBlue+1)
-    Obs_limit[i].SetMarkerColor(kBlue+1)
-    Obs_limit[i].SetMarkerStyle(21)
-    Obs_limit[i].SetMarkerSize(1.5)
+    Obs_limit[i].SetLineColor(1)
+    Obs_limit[i].SetMarkerColor(1)
+    Obs_limit[i].SetMarkerStyle(20)
+    Obs_limit[i].SetMarkerSize(0.7)
     Xsec_grph[i].SetLineStyle(2)
     Xsec_grph[i].SetLineWidth(2)
     Xsec_grph[i].SetLineColor(kRed)
 
     canvas.SetLogy()    
-    TwoSig_limit[i].GetXaxis().SetTitle("M_{BH} (TeV)")
-    TwoSig_limit[i].GetYaxis().SetTitle("95% CL on #sigma  (fb)")
+    TwoSig_limit[i].GetXaxis().SetTitle("M_{BH} [TeV]")
+    TwoSig_limit[i].GetYaxis().SetTitle("95% CL on #sigma [fb]")
     TwoSig_limit[i].GetYaxis().SetTitleOffset(1)
     TwoSig_limit[i].SetTitle("")
     TwoSig_limit[i].SetMinimum(ymin)
     TwoSig_limit[i].SetMaximum(ymax)
-    TwoSig_limit[i].Draw("AE3")
+    TwoSig_limit[i].Draw("AE3L")
     OneSig_limit[i].Draw("sameE3")
     Exp_limit[i].Draw("sameL")
     Obs_limit[i].Draw("sameLP")
@@ -453,12 +458,17 @@ for i in range(0,len(Exp_limit)):
     #draw the lumi text on the canvas
     CMS_lumi.CMS_lumi(canvas, iPeriod, iPos)
 
-    leg= TLegend(0.65,0.65,0.9,0.9, "%s"%Modelpoints[i].ModelID, "brNDC")
+    if Modelpoints[i].ModelID=="BH1":
+        modelText = "BlackMax: Nonrotating BH"
+    else:
+        modelText = Modelpoints[i].ModelID
+    
+    leg= TLegend(0.65,0.65,0.9,0.9, "%s"%modelText, "brNDC")
     leg.AddEntry(Obs_limit[i],"Observed","LP")
-    leg.AddEntry(Exp_limit[i],"Expected","L")
-    leg.AddEntry(OneSig_limit[i],"Expected 1-#sigma","F")
-    leg.AddEntry(TwoSig_limit[i],"Expected 2-#sigma","F")
-    leg.AddEntry(Xsec_grph[i],"M_{D} = %s, n = %i"%(Modelpoints[i].MD,Modelpoints[i].n),"L")
+    #leg.AddEntry(Exp_limit[i],"Expected","L")
+    leg.AddEntry(OneSig_limit[i],"68% expected","lf")
+    leg.AddEntry(TwoSig_limit[i],"95% expected","lf")
+    leg.AddEntry(Xsec_grph[i],"M_{D} = %s TeV, n = %i"%(Modelpoints[i].MD/1000,Modelpoints[i].n),"L")
     leg.SetFillColor(0)
     leg.SetBorderSize(0)
     leg.SetTextFont(42)
