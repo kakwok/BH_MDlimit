@@ -24,6 +24,7 @@ CMS_lumi.extraText = "Preliminary"
 CMS_lumi.lumi_sqrtS = "13 TeV" # used with iPeriod = 0, e.g. for simulation-only plots (default is an empty string)
 iPos = 11
 if( iPos==0 ): CMS_lumi.relPosX = 0.12
+CMS_lumi.lumiTextSize     = 0.65
 
 H_ref = 600;
 W_ref = 800;
@@ -69,6 +70,14 @@ SB_n6_exp.SetLineWidth(2)
 SB_n6_exp.SetLineStyle(2)
 SB_n6_exp.SetLineColor(kBlack)
 SB_n6_exp.SetMarkerStyle(0)
+SB_n6_OneSig.SetLineWidth(2)
+SB_n6_OneSig.SetLineStyle(2)
+SB_n6_OneSig.SetLineColor(kBlack)
+SB_n6_OneSig.SetFillColor(kGreen+1)
+SB_n6_TwoSig.SetLineWidth(2)
+SB_n6_TwoSig.SetLineStyle(2)
+SB_n6_TwoSig.SetLineColor(kBlack)
+
 
 mg = TMultiGraph()
 mg.Add(SB_n6_TwoSig)
@@ -77,7 +86,7 @@ mg.Add(SB_n6)
 mg.Add(SB_n6_exp)
 
 mg.SetMinimum(6.5)
-mg.SetMaximum(10.5)
+mg.SetMaximum(11)
 
 mg.Draw("ALP E3")
 mg.GetXaxis().SetTitle("M_{S} [TeV]")
@@ -107,17 +116,17 @@ frame = canvas.GetFrame()
 frame.Draw()
 
 blankline = 0
-#latex.DrawLatex(0.36,0.87,"g_{s} = 0.2")
-#leg= TLegend(0.35,0.65,0.75,0.85, "Charybdis2", "brNDC")
-#leg.AddEntry(SB_n6," ","pl")
-#leg.SetBorderSize(0)
-#leg.SetTextFont(42)
-#leg.SetTextSize(0.03)
-#leg.Draw()
 
-leg2= TLegend(0.4,0.65,0.85,0.85, "String balls, g_{s} = 0.2 (Charybdis2)", "brNDC")
+latex.DrawLatex(0.17,0.78, "String balls (Charybdis 2)")
+latex.DrawLatex(0.17,0.73, "g_{s} = 0.2")
+
+latex.DrawLatex(0.65,0.87,"Lower limits, 95% CL")
+leg2= TLegend(0.65,0.65,0.85,0.85, "", "brNDC")
+#latex.DrawLatex(0.415,0.87,"Lower limits, 95% CL")
+#leg2= TLegend(0.4,0.65,0.85,0.85, "String balls, g_{s} = 0.2 (Charybdis 2)", "brNDC")
 leg2.AddEntry(SB_n6 ,"Observed ","pl")
-leg2.AddEntry(SB_n6_exp,"Expected","pl")
+leg2.AddEntry(SB_n6_OneSig,"68% expected","lf")
+leg2.AddEntry(SB_n6_TwoSig,"95% expected","lf")
 leg2.SetBorderSize(0)
 leg2.SetTextFont(42)
 leg2.SetTextSize(0.045)
